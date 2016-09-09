@@ -1,0 +1,28 @@
+{
+  "name": "efog-oauth2-server",
+  "version": "1.0.0",
+  "description": "A simple yet fully complete MongoDB backed OAuth2 server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/efog/efog-oauth2-server.git"
+  },
+  "keywords": [
+    "OAuth2",
+    "Server",
+    "Efog"
+  ],
+  "author": "Étienne Brouillard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/efog/efog-oauth2-server/issues"
+  },
+  "homepage": "https://github.com/efog/efog-oauth2-server#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  }
+}
