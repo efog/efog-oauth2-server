@@ -23,6 +23,7 @@
   "homepage": "https://github.com/efog/efog-oauth2-server#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "swagger-express-mw": "^0.7.0"
   }
 }

@@ -8,4 +8,6 @@ const config = {
 };
 
 const runner = new expressRunner.ExpressRunner(config);
-runner.start();
+runner.start(() => {
+    console.log(`Running on port ${config.port}`);
+});
