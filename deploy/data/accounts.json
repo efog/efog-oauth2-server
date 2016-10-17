@@ -1,0 +1,22 @@
+[
+    {
+        "accountName": "account123456",
+        "accountOwners": [],
+        "accountManagers": [],
+        "effectiveDate": "2014-01-01T13:13:34.441Z",
+        "terminationDate": "2022-01-01T13:13:34.441Z",
+        "clients": [
+            {
+                "clientId": "clientid123456",
+                "clientSecret": "clientsecretabcdef",
+                "applicationName": "an application name",
+                "applicationDescription": "a description of the app's purpose",
+                "effectiveDate": "2014-01-01T13:13:34.441Z",
+                "terminationDate": "2022-01-01T13:13:34.441Z",
+                "scopes": [
+                    "/"
+                ]
+            }
+        ]
+    }
+]

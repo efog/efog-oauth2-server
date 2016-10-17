@@ -2,6 +2,7 @@ swagger: "2.0"
 info:
   version: "0.0.1"
   title: RFC-6749 Authorization Server API
+host: "localhost:2406"
 # basePath prefixes all resource paths 
 basePath: /oauth
 # 
@@ -20,45 +21,47 @@ paths:
     # binds a127 app logic to a route
     x-swagger-router-controller: token-controller
     post:
+      consumes: 
+        - application/x-www-form-urlencoded
       description: 'Token Endpoint. The token endpoint is used by the client to obtain an access token by presenting its authorization grant or refresh token. The token endpoint is used with every authorization grant except for the implicit grant type (since an access token is issued directly).'
       parameters:
         - name: grant_type
-          description: 'REQUIRED. Value MUST be set to "authorization_code", "password", "client_credentials", "refresh_token".'
+          in: formData
           type: string
           enum:
             - authorization_code
             - password
             - client_credentials
             - refresh_token
-          in: query
+          description: Value MUST be set to "authorization_code", "password", "client_credentials", "refresh_token".
         - name: refresh_token
-          description: 'REQUIRED when using grant_type "refresh_token". The refresh token issued to the client.'
+          in: formData
           type: string
-          in: query
+          description: REQUIRED when using grant_type "refresh_token". The refresh token issued to the client.
         - name: code
-          description: 'REQUIRED if the grant_type is authorization_code. The authorization code received from the authorization server.'
+          in: formData
           type: string
-          in: query
-        - name: redirect_uri
-          description: 'REQUIRED, if the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.'
+          description: REQUIRED if the grant_type is authorization_code. The authorization code received from the authorization server.
+        - name: redirect_url
+          in: formData
           type: string
-          in: query
+          description: REQUIRED, if the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
         - name: client_id
-          description: 'The client identifier as described in Section 2.2'
+          in: formData
           type: string
-          in: query
+          description: The client identifier as described in Section 2.2
         - name: username
-          description: 'REQUIRED when grant_type is set to password. Value MUST be set to "password".'
+          in: formData
           type: string
-          in: query
+          description: REQUIRED when grant_type is set to password. Value MUST be set to "password".
         - name: password
-          description: 'REQUIRED when grant_type is set to password. The resource owner username.'
+          in: formData
           type: string
-          in: query
+          description: REQUIRED when grant_type is set to password. The resource owner username.
         - name: scope
-          description: 'OPTIONAL. The scope of the access request as described by Section 3.3.'
+          in: formData
           type: string
-          in: query
+          description: OPTIONAL. The scope of the access request as described by Section 3.3.
         - name: Authorization
           description: Authorization token
           type: string
