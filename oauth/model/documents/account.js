@@ -1,5 +1,6 @@
 const moment = require("moment");
-const mongoose = require("mongoose");
+const Promise = require('bluebird');
+const mongoose = Promise.promisifyAll(require("mongoose"));
 
 /**
  * Define account document schema
@@ -60,12 +61,14 @@ exports.AccountSchema = new mongoose.Schema({
     }
 });
 exports.AccountSchema.statics.findByName = function (name) {
-    return this.find({
+    console.log(`finding by name ${name}`);
+
+    return this.findOne({
         "accountName": name
     });
 };
 exports.AccountSchema.statics.findClientByClientId = function(clientId) {
-    return this.find({
+    return this.findOne({
         "clients.clientId": clientId
     });
 };
