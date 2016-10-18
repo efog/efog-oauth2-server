@@ -1,5 +1,4 @@
-const mongooseDB = require('./model/storage/mongoose-db');
-const bluebird = require('bluebird');
+const Database = require('./model/storage/mongo/mongo-database');
 
 /**
  * Token endpoint management class
@@ -9,14 +8,6 @@ const bluebird = require('bluebird');
 class TokenEndpoint {
 
     /**
-     * Creates an instance of TokenEndpoint.
-     * 
-     */
-    constructor() {
-        this._db = new mongooseDB.MongooseDB();
-    }
-
-    /**
      * Handle password grant type
      * 
      * @param {any} grant grant definition
@@ -24,7 +15,15 @@ class TokenEndpoint {
      * @returns {undefined}
      */
     password(grant, callback) {
-        return callback(null, null);
+        const Account = require('./model/storage/mongo/documents/account').Account;
+        
+        return Account.findByName('account123456')
+            .then((result) => {
+                return callback(null, result);
+            })
+            .catch((error) => {
+                return callback(error, null);
+            });
     }
 }
 exports.TokenEndpoint = TokenEndpoint;
