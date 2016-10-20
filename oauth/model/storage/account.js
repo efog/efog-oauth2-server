@@ -26,7 +26,7 @@ exports.AccountSchema = new mongoose.Schema({
         "required": true,
         "type": Date
     },
-    "clients": {
+    "clients": [{
         "clientId": {
             "index": true,
             "required": true,
@@ -57,14 +57,14 @@ exports.AccountSchema = new mongoose.Schema({
         "scopes": {
             "type": [String]
         }
-    }
+    }]
 });
 exports.AccountSchema.statics.findByName = function (name) {
     return this.findOne({
         "accountName": name
     });
 };
-exports.AccountSchema.statics.findClientByClientId = function (clientId) {
+exports.AccountSchema.statics.findByClientId = function (clientId) {
     return this.findOne({
         "clients.clientId": clientId
     });

@@ -1,4 +1,5 @@
 const Database = require('./model/storage/mongo/mongo-database');
+const Account = require('./model/storage/account').Account;
 
 /**
  * Token endpoint management class
@@ -15,8 +16,7 @@ class TokenEndpoint {
      * @returns {undefined}
      */
     password(grant, callback) {
-        const Account = require('./model/storage/mongo/documents/account').Account;
-        
+
         return Account.findByName('account123456')
             .then((result) => {
                 return callback(null, result);
