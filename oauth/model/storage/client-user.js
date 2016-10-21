@@ -1,8 +1,8 @@
 const TableStorageAdapter = require("./azure/table-storage-adapter").TableStorageAdapter;
 const Promise = require('bluebird');
 const crypto = require('crypto');
-const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
 const moment = require('moment');
+const azure = require('azure-storage');
 
 /**
  * ClientUser class
@@ -14,16 +14,20 @@ class ClientUser {
     /**
      * Creates an instance of User.
      * 
-     * @param {any} clientId client identification
-     * @param {any} userkey userkey
+     * @param {string} clientId client identification
+     * @param {string} username username
+     * @param {string} userkey userkey
+     * @param {Boolean} isActive isActive
+     * @param {Date} expiry expiry
      * 
      * @memberOf ClientUser
      */
-    constructor(clientId, userkey) {
+    constructor(clientId, username, userkey, isActive, expiry) {
         this._clientId = clientId;
-        this._userkey = null;
-        this._isActive = false;
-        this._expiry = moment();
+        this._username = username;
+        this._userkey = userkey;
+        this._isActive = isActive;
+        this._expiry = expiry;
     }
 
     get clientId() {
@@ -31,6 +35,13 @@ class ClientUser {
     }
     set clientId(value) {
         return this._clientId;
+    }
+
+    get username() {
+        return this._username;
+    }
+    set username(value) {
+        return this._username;
     }
 
     get expiry() {
@@ -61,7 +72,19 @@ class ClientUser {
      * @memberOf ClientUser
      * @returns {Promise} a save promise
      */
-    save() { }
+    save() {
+        const entGen = azure.TableUtilities.entityGenerator;
+        const entity = {
+            "PartitionKey": entGen.String(this.clientId),
+            "RowKey": entGen.String(this.userkey),
+            "username": entGen.String(this.username),
+            "isActive": entGen.Boolean(this.isActive),
+            "expiry": entGen.DateTime(this.expiry)
+        };
+        const tableService = new TableStorageAdapter().service;
+
+        return tableService.insertOrReplaceAsync('clientusers', entity);
+    }
 }
 
 /**
@@ -75,17 +98,14 @@ class ClientUser {
  */
 ClientUser.generateUserkey = function (clientId, username, password) {
     const promise = new Promise((resolve, reject) => {
-        hmac.on('readable', () => {
-            const data = hmac.read();
-            if (data) {
-                return resolve(data.toString('hex'));
-            }
-
-            return reject('NO HMAC');
-        });
-
-        hmac.write(`${username}${clientId}++++${password}`);
-        hmac.end();
+        try {
+            const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+            const hash = hmac.update(`${username}${clientId}++++${password}`).digest('hex');
+            resolve(hash);
+        }
+        catch (error) {
+            reject(error);
+        }
     });
 
     return promise;
@@ -104,7 +124,7 @@ ClientUser.fetch = function (clientId, username, password) {
     const tableService = new TableStorageAdapter();
     const promise = new Promise((resolve, reject) => {
         const retrieveEntityResolve = (clientUserEntity) => {
-            const clientUser = new ClientUser(clientId, clientUserEntity.userkey);
+            const clientUser = new ClientUser(clientUserEntity.clientId, clientUserEntity.username, clientUserEntity.userkey, clientUserEntity.isActive, clientUserEntity.expiry);
 
             return resolve(clientUser);
         };
