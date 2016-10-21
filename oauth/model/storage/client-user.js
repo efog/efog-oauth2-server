@@ -82,8 +82,15 @@ class ClientUser {
             "expiry": entGen.DateTime(this.expiry)
         };
         const tableService = new TableStorageAdapter().service;
+        const promise = new Promise((resolve, reject) => { 
+            return tableService.insertOrReplaceEntityAsync('clientusers', entity)
+            .then((result) => {
+                resolve(result);
+            })
+            .catch(reject);
+        });
 
-        return tableService.insertOrReplaceAsync('clientusers', entity);
+        return promise;
     }
 }
 
@@ -114,17 +121,18 @@ ClientUser.generateUserkey = function (clientId, username, password) {
 /**
  * Gets client user for clientid, username and password
  * 
- * @param {string} clientId client identificatioin
+ * @param {string} clientId client identification
+ * @param {string} userkey users key
  * @param {string} username users username
  * @param {string} password users password
  * 
  * @returns {Promise} a fetch promise
  */
-ClientUser.fetch = function (clientId, username, password) {
+ClientUser.fetch = function (clientId, userkey, username, password) {
     const tableService = new TableStorageAdapter();
     const promise = new Promise((resolve, reject) => {
         const retrieveEntityResolve = (clientUserEntity) => {
-            const clientUser = new ClientUser(clientUserEntity.clientId, clientUserEntity.username, clientUserEntity.userkey, clientUserEntity.isActive, clientUserEntity.expiry);
+            const clientUser = new ClientUser(clientUserEntity.PartitionKey._, clientUserEntity.username._, clientUserEntity.RowKey._, clientUserEntity.isActive._, moment(clientUserEntity.expiry._));
 
             return resolve(clientUser);
         };
@@ -143,6 +151,11 @@ ClientUser.fetch = function (clientId, username, password) {
                 .then(tableAdapterResolve)
                 .catch(reject);
         };
+        if (userkey) {
+            return tableService.service.retrieveEntityAsync('clientusers', clientId, userkey)
+                .then(retrieveEntityResolve)
+                .catch(reject);
+        }
 
         return ClientUser.generateUserkey(clientId, username, password)
             .then(userkeyResolve)
