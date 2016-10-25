@@ -82,12 +82,12 @@ class ClientUser {
             "expiry": entGen.DateTime(this.expiry)
         };
         const tableService = new TableStorageAdapter().service;
-        const promise = new Promise((resolve, reject) => { 
+        const promise = new Promise((resolve, reject) => {
             return tableService.insertOrReplaceEntityAsync('clientusers', entity)
-            .then((result) => {
-                resolve(result);
-            })
-            .catch(reject);
+                .then((result) => {
+                    resolve(result);
+                })
+                .catch(reject);
         });
 
         return promise;
@@ -104,6 +104,9 @@ class ClientUser {
  * @returns {Promise} a userkey Promise
  */
 ClientUser.generateUserkey = function (clientId, username, password) {
+    if (!process.env.APP_HMAC_SECRET) {
+        throw new Error('NO APP HMAC SECRET');
+    }
     const promise = new Promise((resolve, reject) => {
         try {
             const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
