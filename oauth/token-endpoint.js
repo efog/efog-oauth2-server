@@ -1,4 +1,3 @@
-const Database = require('./model/storage/mongo/mongo-database');
 const Account = require('./model/storage/account').Account;
 
 /**

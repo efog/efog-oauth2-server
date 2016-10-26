@@ -1,7 +1,6 @@
 const TableStorageAdapter = require("./azure/table-storage-adapter").TableStorageAdapter;
 const Promise = require('bluebird');
 const crypto = require('crypto');
-const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
 const moment = require('moment');
 
 /**
@@ -75,6 +74,7 @@ class ClientUser {
  */
 ClientUser.generateUserkey = function (clientId, username, password) {
     const promise = new Promise((resolve, reject) => {
+        const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
         hmac.on('readable', () => {
             const data = hmac.read();
             if (data) {
