@@ -20,12 +20,13 @@ describe('account schema', () => {
         promise.finally(done);
     });
     it('should find account by client id', (done) => {
-        const targetClientId = 'clientid123456';
-        const promise = Account.findByClientId(targetClientId)
+        const targetAccountName = 'account123456';
+        const targetApplicationName = 'clientid123456';
+        const promise = Account.findByApplicationName(targetAccountName, targetApplicationName)
             .then((result) => {
                 expect(result).not.toEqual(null);
                 expect(result.clients.length).toEqual(2);
-                expect(result.clients[0].clientId).toEqual(targetClientId);
+                expect(result.clients[0].applicationName).toEqual(targetApplicationName);
             })
             .catch((error) => {
                 console.error(error);

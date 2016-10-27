@@ -36,18 +36,14 @@ exports.AccountSchema = new mongoose.Schema({
         "type": Date
     },
     "clients": [{
-        "clientId": {
-            "index": true,
-            "required": true,
-            "type": String
-        },
-        "clientSecret": {
+        "applicationSecret": {
             "required": true,
             "type": String
         },
         "applicationName": {
             "type": String,
-            "required": true
+            "required": true,
+            "index": true
         },
         "applicationDescription": {
             "type": String,
@@ -68,6 +64,13 @@ exports.AccountSchema = new mongoose.Schema({
         }
     }]
 });
+
+/**
+ * Creates an account
+ * 
+ * @param {Object} argv account creation arguments
+ * @returns {Promise} an execution promise
+ */
 exports.AccountSchema.statics.create = (argv) => {
     const promise = new Promise((resolve, reject) => {
 
@@ -79,7 +82,7 @@ exports.AccountSchema.statics.create = (argv) => {
         account.terminationDate = moment("2099/01/01", "YYYY/MM/DD", true).endOf("year");
         account.clients = [];
 
-        return account.generateAccountSecret().then((key) => {
+        return account.generateAccountSecret(argv.accountPassword).then((key) => {
             account.accountSecret = key;
 
             return account.save()
@@ -90,34 +93,130 @@ exports.AccountSchema.statics.create = (argv) => {
 
     return promise;
 };
+
+/**
+ * Finds account by name
+ * 
+ * @param {string} name account name
+ * @returns {Promise} an execution promise
+ */
 exports.AccountSchema.statics.findByName = function (name) {
     return this.findOne({
         "accountName": name
     });
 };
-exports.AccountSchema.statics.findByClientId = function (clientId) {
+
+/**
+ * Finds account by email
+ * 
+ * @param {string} email account registered email
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.statics.findByEmail = function (email) {
     return this.findOne({
-        "clients.clientId": clientId
+        "accountOwner": email
     });
 };
-exports.AccountSchema.methods.generateAccountSecret = function () {
+
+/**
+ * Finds accounts by application name and account name
+ * 
+ * @param {string} accountName account name
+ * @param {string} applicationName application name
+ * 
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.statics.findByApplicationName = function (accountName, applicationName) {
+    return this.findOne({
+        "accountName": accountName,
+        "clients.applicationName": applicationName
+    });
+};
+
+/**
+ * Adds a client to account and saves
+ * 
+ * @param {object} argv client arguments
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.statics.addClient = function (argv) {
+    const accountName = argv.accountName;
+    const applicationName = argv.applicationName;
+    const accountPassword = argv.accountPassword;
+};
+
+/**
+ * Generate an account secret for instance with password
+ * 
+ * @param {string} password password to generate key against
+ * @returns {Promise} a key generation promise
+ */
+exports.AccountSchema.methods.generateAccountSecret = function (password) {
     const promise = new Promise((resolve, reject) => {
         const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
-        hmac.on('readable', () => {
-            const data = hmac.read();
-            if (data) {
-                const val = data.toString('hex');
-
-                return resolve(val);
-            }
-
-            return reject('NO HMAC');
-        });
-
-        hmac.write(`${this.accountName}$++++`);
-        hmac.end();
+        const hash = hmac.update(`${this.accountName}$+++${password}+${this.accountOwner}`).digest('hex');
+        resolve(hash);
     });
 
+    return promise;
+};
+
+/**
+ * Generate an application secret for instance
+ * 
+ * @param {string} applicationName application name
+ * @returns {Promise} a key generation promise
+ */
+exports.AccountSchema.methods.generateApplicationSecret = function (applicationName) {
+    const promise = new Promise((resolve, reject) => {
+        const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+        const hash = hmac.update(`${this.accountName}$+++${this.accountSecret}+${moment().format()}`).digest('hex');
+        resolve(hash);
+    });
+
+    return promise;
+};
+
+/**
+ * Adds an application to the account
+ * 
+ * @param {string} applicationName application name
+ * @param {string} applicationDescription application description
+ * 
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.methods.addApplication = function (applicationName, applicationDescription) {
+    return this.generateApplicationSecret(applicationName)
+        .then((secret) => {
+            const app = {
+                "applicationName": applicationName,
+                "applicationSecret": secret,
+                "applicationDescription": applicationDescription,
+                "terminationDate": moment("2099/01/01", "YYYY/MM/DD", true).endOf("year"),
+                "scopes": ["*"]
+            };
+            this.clients.push(app);
+            return this.save();
+        });
+};
+
+/**
+ * Validates that account instance matches the password
+ * 
+ * @param {string} password password to validate against
+ * @returns {Promise} a promise following ownership validation
+ */
+exports.AccountSchema.methods.validateOwnership = function (password) {
+    const promise = new Promise((resolve, reject) => {
+        return this.generateAccountSecret(password)
+            .then((key) => {
+                if (key === this.accountSecret) {
+                    return resolve(true);
+                }
+                return reject('Password doesn\'t match key');
+            })
+            .catch(reject);
+    });
     return promise;
 };
 

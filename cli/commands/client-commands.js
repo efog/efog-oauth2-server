@@ -3,87 +3,73 @@ const crypto = require("crypto");
 const moment = require("moment");
 const inquirer = require('inquirer');
 const Account = require('../../oauth/model/storage/account').Account;
-const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
 
 /**
- * Validate account name
+ * Add a client to an account
  * 
- * @param {any} input question input
- * @param {any} isNew is new resource
- * @returns {Promise} validation promise
+ * @param {object} argv command arguments
+ * @returns {undefined}
  */
-function validateAccountName(input, isNew) {
+function add(argv) {
     const promise = new Promise((resolve, reject) => {
-        if (input) {
-            return Account.findByName(input).then((found) => {
-                if (isNew) {
-                    return resolve(!found);
-                }
-
-                return resolve(found);
-            });
-        }
-
-        return resolve(false);
-    });
-
-    return promise;
-}
-
-/**
- * Validate account email
- * 
- * @param {any} input question input
- * 
- * @returns {Promise} validation promise
- */
-function validateAccountOwnerEmail(input) {
-    const promise = new Promise((resolve, reject) => {
-        if (input) {
-            const test = new RegExp(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/).test(input);
-
-            return resolve(test);
-        }
-
-        return resolve(false);
-    });
-
-    return promise;
-}
-
-/**
- * Create client
- * 
- * @param {any} argv argument object
- * @returns {Promise} an execution promise
- */
-function create(argv) {
-    return new Promise((resolve, reject) => {
+        // application name
+        // client id to generate
         const questions = [];
         if (!argv["account-name"]) {
             questions.push(
                 {
                     "type": "input",
                     "name": "accountName",
-                    "message": "Enter account name",
-                    "validate": validateAccountName
+                    "message": "Enter account name"
                 });
         }
-        if (!argv["account-owner"]) {
+        if (!argv["account-password"]) {
             questions.push(
                 {
-                    "type": "input",
-                    "name": "accountOwner",
-                    "message": "Enter account owner email",
-                    "validate": validateAccountOwnerEmail
+                    "type": "password",
+                    "name": "accountPassword",
+                    "message": "Enter account password"
                 });
         }
-        
-        return inquirer.prompt(questions)
+
+        inquirer.prompt(questions)
             .then(function (answers) {
-                return Account.create(answers).then(resolve);
-            })
-            .catch(reject);
+                let account = null;
+                Account.findByName(answers.accountName)
+                    .then((found) => {
+                        account = found;
+                        if (!account) {
+                            throw new Error("Account not found");
+                        }
+                        return account.validateOwnership(answers.accountPassword);
+                    })
+                    .then((isOwner) => {
+                        questions.length = 0;
+                        if (!argv["application-name"]) {
+                            questions.push(
+                                {
+                                    "type": "input",
+                                    "name": "applicationName",
+                                    "message": "Enter application name"
+                                });
+                            questions.push(
+                                {
+                                    "type": "input",
+                                    "name": "applicationDescription",
+                                    "message": "Enter application description"
+                                });
+                        }
+                        return inquirer.prompt(questions);
+                    })
+                    .then((clientAnswers) => {
+                        const applicationName = clientAnswers.applicationName;
+                        const applicationDescription = clientAnswers.applicationDescription;
+                        return account.addApplication(applicationName, applicationDescription);
+                    })
+                    .then(resolve)
+                    .catch(reject);
+            });
     });
+    return promise;
 }
-exports.create = create;
+exports.add = add;
