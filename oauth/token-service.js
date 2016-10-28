@@ -52,7 +52,6 @@ function getJwt(accountName) {
  */
 TokenService.getBearerToken = function (accountName, accountPassword) {
     return new Promise((resolve, reject) => {
-
         return Account.findByNameAndPassword(accountName, accountPassword)
             .then((account) => {
                 if (account) {
