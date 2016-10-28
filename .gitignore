@@ -39,3 +39,4 @@ jspm_packages
 #VS CODE
 .vscode
 **/*.key
+*.sh

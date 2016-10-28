@@ -28,7 +28,7 @@ TokenService.getBearerToken = function (accountName, accountPassword) {
                 const accessToken = {
                     "access_token": token,
                     "token_type": "Bearer",
-                    "expires_in": moment().add(24, 'hour')
+                    "expires_in": 24 * 60 * 60
                 };
                 return resolve(accessToken);
             })
@@ -61,6 +61,25 @@ TokenService.getPrivateKey = function () {
     const promise = new Promise((resolve, reject) => {
         let data = [];
         https.get(privateKeyUrl, (res) => {
+
+            res.on('data', (received) => {
+                data += received;
+            });
+            res.on('end', () => {
+                resolve(data);
+            });
+
+        }).on('error', (httpError) => {
+            reject(httpError);
+        });
+    });
+    return promise;
+};
+
+TokenService.getPublicKey = function () {
+    const promise = new Promise((resolve, reject) => {
+        let data = [];
+        https.get(publicKeyUrl, (res) => {
 
             res.on('data', (received) => {
                 data += received;
