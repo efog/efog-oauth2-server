@@ -27,12 +27,13 @@ class TokenController extends BaseController {
                     }
                     const endpointCallback = (err, result) => {
                         if (err) {
-                            return this.sendInternalServerError(req, res, err);
-                        }
-                        
-                        return this.sendOk(req, res, 'OK');
+                            if (err.message.startsWith("401")) {
+                                return this.sendUnauthorized(req, res, err.message);
+                            }
+                            return this.sendInternalServerError(req, res, err.message);
+                        }                        
+                        return this.sendOk(req, res, result);
                     };
-
                     return this.tokenEndpoint[grantType](this.makeGrant(grantType, req.swagger.params), endpointCallback);
                 }
             },

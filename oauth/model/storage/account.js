@@ -157,13 +157,13 @@ exports.AccountSchema.statics.findByNameAndPassword = function (accountName, acc
                 if (targetAccount) {
                     return account.validateOwnership(accountPassword);
                 }
-                return reject("Account not found");
+                return reject(new Error("401: ACCOUNT NOT FOUND"));
             })
             .then((isowner) => {
                 if (isowner) {
                     return resolve(this);
                 }
-                return reject("Invalid Username & Password");
+                return reject(new Error("401: ACCOUNT OWNERSHIP DENIED"));
             });
     });
     return promise;

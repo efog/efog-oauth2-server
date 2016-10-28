@@ -1,4 +1,4 @@
-const Account = require('./model/storage/account').Account;
+const TokenService = require('./token-service').TokenService;
 
 /**
  * Token endpoint management class
@@ -15,13 +15,12 @@ class TokenEndpoint {
      * @returns {undefined}
      */
     password(grant, callback) {
-
-        return Account.findByName('account123456')
-            .then((result) => {
-                return callback(null, result);
+        return TokenService.getBearerToken(grant.username, grant.password)
+            .then((token) => { 
+                callback(null, token);
             })
             .catch((error) => {
-                return callback(error, null);
+                callback(error, null);
             });
     }
 }
