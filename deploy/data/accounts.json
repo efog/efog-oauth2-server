@@ -27,5 +27,37 @@
                 ]
             }
         ]
+    },
+    {
+        "accountSecret": "3aaf51a05796884f75d4fd2025731eef51c22e22a44665b3de1fc2021a50cb93",
+        "accountOwner": "dev@hotmail.com",
+        "accountName": "dev",
+        "clients": [
+            {
+                "applicationName": "dev",
+                "applicationSecret": "72f28f02bc8433cc9dfa636e0c8f01f7f2a7d9382fc6f85ece8b0370d783243b",
+                "applicationDescription": "dev",
+                "scopes": [
+                    "*"
+                ],
+                "terminationDate": "2100-01-01T04:59:59.999Z",
+                "effectiveDate": "2016-10-27T12:45:22.522Z"
+            },
+            {
+                "applicationName": "gluten",
+                "applicationSecret": "b125985a9483bcbfdafdf735468949a96a94d29e1f030e8787d461d5bcb00892",
+                "applicationDescription": "gluten app",
+                "scopes": [
+                    "*"
+                ],
+                "terminationDate": "2100-01-01T04:59:59.999Z",
+                "effectiveDate": "2016-10-27T17:55:31.187Z",
+                "applicationKey": "7849f248-7494-4fce-54a9-b28a4531b4d6"
+            }
+        ],
+        "terminationDate": "2100-01-01T04:59:59.999Z",
+        "effectiveDate": "2016-10-27T12:45:10.992Z",
+        "accountManagers": [],
+        "__v": 1
     }
 ]

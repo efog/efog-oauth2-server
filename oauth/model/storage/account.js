@@ -1,6 +1,7 @@
 const moment = require("moment");
 const mongoose = require("mongoose");
 const crypto = require('crypto');
+const guid = require("../../../tools/guid").guid;
 
 /**
  * Define account document schema
@@ -44,6 +45,12 @@ exports.AccountSchema = new mongoose.Schema({
             "type": String,
             "required": true,
             "index": true
+        },
+        "applicationKey": {
+            "type": String,
+            "required": true,
+            "index": true,
+            "default": guid()
         },
         "applicationDescription": {
             "type": String,
@@ -119,7 +126,7 @@ exports.AccountSchema.statics.findByEmail = function (email) {
 };
 
 /**
- * Finds accounts by application name and account name
+ * Finds account by application name and account name
  * 
  * @param {string} accountName account name
  * @param {string} applicationName application name
@@ -131,6 +138,35 @@ exports.AccountSchema.statics.findByApplicationName = function (accountName, app
         "accountName": accountName,
         "clients.applicationName": applicationName
     });
+};
+
+/**
+ * Finds account by name and password
+ * 
+ * @param {string} accountName account name
+ * @param {string} accountPassword account password
+ * 
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.statics.findByNameAndPassword = function (accountName, accountPassword) {
+    let targetAccount = null;
+    const promise = new Promise((resolve, reject) => {
+        exports.Account.findByName(accountName)
+            .then((account) => {
+                targetAccount = account;
+                if (targetAccount) {
+                    return account.validateOwnership(accountPassword);
+                }
+                return reject("Account not found");
+            })
+            .then((isowner) => {
+                if (isowner) {
+                    return resolve(this);
+                }
+                return reject("Invalid Username & Password");
+            });
+    });
+    return promise;
 };
 
 /**
@@ -213,12 +249,10 @@ exports.AccountSchema.methods.validateOwnership = function (password) {
                 if (key === this.accountSecret) {
                     return resolve(true);
                 }
-                return reject('Password doesn\'t match key');
-            })
-            .catch(reject);
+                return resolve(false);
+            });
     });
     return promise;
 };
-
 
 exports.Account = mongoose.model("account", exports.AccountSchema);
