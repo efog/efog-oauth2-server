@@ -17,7 +17,7 @@ consumes:
 produces:
   - application/json
 paths:
-  /token:
+  /token: 
     # binds a127 app logic to a route
     x-swagger-router-controller: token-controller
     post:

@@ -2,9 +2,10 @@ const Account = require('./model/storage/account').Account;
 const Promise = require('bluebird');
 const moment = require('moment');
 const getter = require('../tools/getter');
+const ul = require('../tools/urload');
 const njwt = require('njwt');
-const privateKeyUrl = process.env.APP_JWT_PRIVATE_KEY_URL;
-const publicKeyUrl = process.env.APP_JWT_PUBLIC_KEY_URL;
+const privateKeyUrl = ul.urload(process.env.APP_JWT_PRIVATE_KEY_URL);
+const publicKeyUrl = ul.urload(process.env.APP_JWT_PUBLIC_KEY_URL);
 
 /**
  * Token helper server
