@@ -44,7 +44,7 @@ class AuthorizationController extends BaseController {
                 return this.codeFlow(requestPayload)
                     .then((result) => {
                         const antiForgeryToken = this.setAntiForgeryTokenCookie(res);
-                        const signinUrl = `${process.env.APP_SIGN_IN_URL}?aft=${antiForgeryToken}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
+                        const signinUrl = `${process.env.APP_SIGN_IN_URL}?aft=${antiForgeryToken}&response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
 
                         this.sendRedirect(req, res, signinUrl);
                     })

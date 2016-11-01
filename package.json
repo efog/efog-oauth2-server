@@ -35,8 +35,10 @@
     "express": "^4.14.0",
     "gulp": "^3.9.1",
     "gulp-mongodb-data": "^2.1.0",
+    "handlebars": "^4.0.5",
     "hapi": "^15.1.1",
     "hapi-bunyan": "^0.6.0",
+    "hoek": "^4.1.0",
     "inert": "^4.0.2",
     "inquirer": "^1.2.2",
     "jasmine": "^2.5.2",
@@ -50,7 +52,8 @@
     "restify": "^4.1.1",
     "swagger-express-mw": "^0.7.0",
     "swagger-hapi": "^0.7.0",
-    "swagger-restify-mw": "^0.7.0"
+    "swagger-restify-mw": "^0.7.0",
+    "vision": "^4.1.0"
   },
   "devDependencies": {
     "gulp-filter": "^4.0.0",

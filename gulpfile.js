@@ -32,10 +32,10 @@ const inject = () => {
             'read': false
         });
 
-    return gulp.src('./oauth/pages/*.html')
+    return gulp.src('./oauth/pages/layouts/*.html')
         .pipe(stream(bowerOptions))
         .pipe(gulpInject(injectSrc, injectOptions))
-        .pipe(gulp.dest('./oauth/pages/'));
+        .pipe(gulp.dest('./oauth/pages/layouts'));
 };
 
 gulp.task('inject', () => {
