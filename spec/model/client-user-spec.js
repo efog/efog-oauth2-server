@@ -1,4 +1,4 @@
-const ClientUser = require("../../oauth/model/storage/client-user").ClientUser;
+const ClientUser = require("../../oauth/model/client-user").ClientUser;
 const moment = require("moment");
 const testClientId = "tstclientid123456";
 const testUsername = "tstusername";

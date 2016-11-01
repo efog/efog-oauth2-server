@@ -1,7 +1,7 @@
 const exit = require('node-clean-exit');
 const moment = require("moment");
 const mongoose = require("mongoose");
-const Database = require("./../oauth/model/storage/mongo/mongo-database");
+const Database = require("./../oauth/model/mongo/mongo-database");
 
 /**
  * Runs the cli

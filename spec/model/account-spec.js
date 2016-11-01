@@ -1,5 +1,5 @@
-const Database = require('../../oauth/model/storage/mongo/mongo-database');
-const Account = require('../../oauth/model/storage/account').Account;
+const Database = require('../../oauth/model/mongo/mongo-database');
+const Account = require('../../oauth/model/account').Account;
 
 /**
  * describe account document schema

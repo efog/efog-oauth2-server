@@ -2,7 +2,7 @@ const bluebird = require("bluebird");
 const crypto = require("crypto");
 const moment = require("moment");
 const inquirer = require('inquirer');
-const Account = require('../../oauth/model/storage/account').Account;
+const Account = require('../../oauth/model/account').Account;
 
 /**
  * Validate account name

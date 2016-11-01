@@ -1,4 +1,4 @@
-const Account = require('./model/storage/account').Account;
+const Account = require('./model/account').Account;
 const Promise = require('bluebird');
 const moment = require('moment');
 const getter = require('../tools/getter');

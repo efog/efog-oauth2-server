@@ -1,4 +1,4 @@
-const TableStorageAdapter = require("../../oauth/model/storage/azure/table-storage-adapter").TableStorageAdapter;
+const TableStorageAdapter = require("../../oauth/model/azure/table-storage-adapter").TableStorageAdapter;
 
 describe("Azure table storage adapter", () => {
     it("should be able to get table from Azure", (done) => {

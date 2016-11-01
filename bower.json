@@ -1,0 +1,48 @@
+{
+  "name": "efog-oauth2-server",
+  "description": "A simple yet fully complete MongoDB backed OAuth2 server",
+  "main": "app.js",
+  "authors": [
+    "Étienne Brouillard"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "OAuth2",
+    "Server",
+    "Efog"
+  ],
+  "homepage": "https://github.com/efog/efog-oauth2-server",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "oauth/pages/bower",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "font-awesome": "fontawesome#^4.7.0"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": [
+        "dist/css/bootstrap.css",
+        "dist/js/bootstrap.js"
+      ]
+    },
+    "font-awesome": {
+      "main": [
+        "less/font-awesome.less",
+        "scss/font-awesome.scss",
+        "css/font-awesome.css",
+        "fonts/FontAwesome.otf",
+        "fonts/fontawesome-webfont.eot",
+        "fonts/fontawesome-webfont.svg",
+        "fonts/fontawesome-webfont.ttf",
+        "fonts/fontawesome-webfont.woff",
+        "fonts/fontawesome-webfont.woff2"
+      ]
+    }
+  }
+}

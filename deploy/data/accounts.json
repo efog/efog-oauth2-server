@@ -29,35 +29,26 @@
         ]
     },
     {
-        "accountSecret": "3aaf51a05796884f75d4fd2025731eef51c22e22a44665b3de1fc2021a50cb93",
-        "accountOwner": "dev@hotmail.com",
+        "accountSecret": "2bc1afbe547854d0ac9f043a4b88b3fa72cd057f50296fa5a91e695ea8e4402f",
+        "accountOwner": "ebrouillard@outlook.com",
         "accountName": "dev",
         "clients": [
             {
-                "applicationName": "dev",
-                "applicationSecret": "72f28f02bc8433cc9dfa636e0c8f01f7f2a7d9382fc6f85ece8b0370d783243b",
-                "applicationDescription": "dev",
+                "applicationName": "devapp",
+                "applicationSecret": "e1bee9d2c8fd91943524a2a736cbacfbc20cd38930342cf469ef8a815118e9a9",
+                "applicationDescription": "devapplication",
+                "redirectUrl": "http://localhost:2406",
+                "_id": "58177c6517a61c414ccac377",
                 "scopes": [
                     "*"
                 ],
                 "terminationDate": "2100-01-01T04:59:59.999Z",
-                "effectiveDate": "2016-10-27T12:45:22.522Z"
-            },
-            {
-                "applicationName": "gluten",
-                "applicationSecret": "b125985a9483bcbfdafdf735468949a96a94d29e1f030e8787d461d5bcb00892",
-                "applicationDescription": "gluten app",
-                "scopes": [
-                    "*"
-                ],
-                "terminationDate": "2100-01-01T04:59:59.999Z",
-                "effectiveDate": "2016-10-27T17:55:31.187Z",
-                "applicationKey": "7849f248-7494-4fce-54a9-b28a4531b4d6"
+                "effectiveDate": "2016-10-31T17:16:02.294Z",
+                "applicationKey": "ee5b0026d1edc18a2c7fa045b45d678cf200fcee17293845fcf3fcb87455494d"
             }
         ],
         "terminationDate": "2100-01-01T04:59:59.999Z",
-        "effectiveDate": "2016-10-27T12:45:10.992Z",
-        "accountManagers": [],
-        "__v": 1
+        "effectiveDate": "2016-10-31T17:15:55.580Z",
+        "accountManagers": []
     }
 ]

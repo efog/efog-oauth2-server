@@ -2,7 +2,7 @@ const bluebird = require("bluebird");
 const crypto = require("crypto");
 const moment = require("moment");
 const inquirer = require('inquirer');
-const Account = require('../../oauth/model/storage/account').Account;
+const Account = require('../../oauth/model/account').Account;
 
 /**
  * Add a client to an account
@@ -58,13 +58,20 @@ function add(argv) {
                                     "name": "applicationDescription",
                                     "message": "Enter application description"
                                 });
+                            questions.push(
+                                {
+                                    "type": "input",
+                                    "name": "redirectUrl",
+                                    "message": "Enter redirection url"
+                                });
                         }
                         return inquirer.prompt(questions);
                     })
                     .then((clientAnswers) => {
                         const applicationName = clientAnswers.applicationName;
                         const applicationDescription = clientAnswers.applicationDescription;
-                        return account.addApplication(applicationName, applicationDescription);
+                        const redirectUrl = clientAnswers.redirectUrl;
+                        return account.addApplication(applicationName, applicationDescription, redirectUrl);
                     })
                     .then(resolve)
                     .catch(reject);
