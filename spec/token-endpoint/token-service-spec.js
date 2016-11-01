@@ -11,7 +11,7 @@ describe('token service', () => {
     beforeAll(() => {
     });
     it('should get token by account name and password', (done) => {
-        const promise = TokenService.getBearerToken("dev", "amee6Huu")
+        const promise = TokenService.getBearerToken("dev", "pass")
             .then((token) => {
                 expect(token).not.toEqual(null);
                 expect(token.expires_in).toEqual(24 * 60 * 60);
@@ -23,7 +23,7 @@ describe('token service', () => {
     });
     it('should validate token with public key', (done) => {
         let target = null;
-        const promise = TokenService.getBearerToken("dev", "amee6Huu")
+        const promise = TokenService.getBearerToken("dev", "pass")
             .then((token) => {
                 target = token;
                 expect(target).not.toEqual(null);
