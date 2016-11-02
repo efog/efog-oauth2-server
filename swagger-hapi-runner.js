@@ -4,6 +4,8 @@ const Hapi = require('hapi');
 const Hoek = require('hoek');
 const Path = require('path');
 const Logger = require('./tools/logger').Logger;
+const RegisterRoute = require('./oauth/routes/register-route').RegisterRoute;
+const RegisterClientRoute = require('./oauth/routes/register-client-route').RegisterClientRoute;
 const SigninRoute = require('./oauth/routes/signin-route').SigninRoute;
 const hapiBunyan = require("hapi-bunyan");
 
@@ -114,6 +116,38 @@ class HapiRunner {
                         "path": '/signin',
                         "config": {
                             "handler": signinRoute.post
+                        }
+                    });
+
+                    const registerRoute = new RegisterRoute();
+                    app.route({
+                        "method": 'GET',
+                        "path": '/register',
+                        "config": {
+                            "handler": registerRoute.get
+                        }
+                    });
+                    app.route({
+                        "method": 'POST',
+                        "path": '/register',
+                        "config": {
+                            "handler": registerRoute.post
+                        }
+                    });
+
+                    const registerClientRoute = new RegisterClientRoute();
+                    app.route({
+                        "method": 'GET',
+                        "path": '/register-client',
+                        "config": {
+                            "handler": registerClientRoute.get
+                        }
+                    });
+                    app.route({
+                        "method": 'POST',
+                        "path": '/register-client',
+                        "config": {
+                            "handler": registerClientRoute.post
                         }
                     });
                 });

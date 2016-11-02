@@ -178,7 +178,7 @@ exports.AccountSchema.statics.findByNameAndPassword = function (accountName, acc
             })
             .then((isowner) => {
                 if (isowner) {
-                    return resolve(this);
+                    return resolve(targetAccount);
                 }
                 return reject(new Error("401: ACCOUNT OWNERSHIP DENIED"));
             });
@@ -285,6 +285,21 @@ exports.AccountSchema.methods.validateOwnership = function (password) {
             });
     });
     return promise;
+};
+
+/**
+ * Account has client id
+ * 
+ * @param {string} clientId client identification
+ * @returns {boolean} has clientid
+ */
+exports.AccountSchema.methods.hasClient = function (clientId) {
+    for (let idx = 0; idx < this.clients.length; idx++) {
+        if (this.clients[idx].applicationKey === clientId) {
+            return true;
+        }
+    }
+    return false;
 };
 
 exports.Account = mongoose.model("account", exports.AccountSchema);
