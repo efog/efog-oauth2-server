@@ -52,28 +52,21 @@ class SigninRoute extends BaseRoute {
          * @returns {undefined}
          */
         this.post = (request, reply) => {
+            const viewData = {
+                "client_id": request.payload.client_id,
+                "redirect_url": request.payload.redirect_url,
+                "response_type": request.payload.response_type,
+                "state": request.payload.state,
+                "scope": request.payload.scope
+            };
             TokenService.getBearerToken(request.payload.username, request.payload.password)
                 .then((account) => {
                     // check if user has allowed client_id
                     // offer to add if not
                     // redirect to oauth/authorization with parameters when response_type = code
-                    const viewData = {
-                        "client_id": request.payload.client_id,
-                        "redirect_url": request.payload.redirect_url,
-                        "response_type": request.payload.response_type,
-                        "state": request.payload.state,
-                        "scope": request.payload.scope
-                    };
                     reply.view('signin', viewData);
                 })
                 .catch((error) => {
-                    const viewData = {
-                        "client_id": request.payload.client_id,
-                        "redirect_url": request.payload.redirect_url,
-                        "response_type": request.payload.response_type,
-                        "state": request.payload.state,
-                        "scope": request.payload.scope
-                    };
                     reply.redirect(`signin?response_type=${viewData.response_type}&redirect_url=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=1`);
                 });
         };
