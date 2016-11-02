@@ -1,4 +1,5 @@
 const SwaggerHapi = require('swagger-hapi');
+const Crumb = require('crumb');
 const Hapi = require('hapi');
 const Hoek = require('hoek');
 const Path = require('path');
@@ -62,12 +63,22 @@ class HapiRunner {
                     };
                 };
 
-                // Swagger
-                app.register(swaggerHapi.plugin, function (error) {
-                    if (error) {
-                        throw new Error(error.message);
+                // Crumb
+                app.register({
+                    "register": Crumb,
+                    "options": {
+                        "cookieOptions": {
+                            "path": "/",
+                            "isSecure": false,
+                            "isHttpOnly": true,
+                            "encoding": "none",
+                            "domain": process.env.APP_NET_DOMAIN
+                        }
                     }
                 });
+
+                // Swagger
+                app.register(swaggerHapi.plugin);
 
                 // Bunyan
                 const bunyanConfig = {
@@ -76,11 +87,7 @@ class HapiRunner {
                         "logger": logger
                     }
                 };
-                app.register(bunyanConfig, function (bunyanLoggerError) {
-                    if (bunyanLoggerError) {
-                        throw new Error("Failed to load plugin:", bunyanLoggerError);
-                    }
-                });
+                app.register(bunyanConfig);
                 app.register(require('vision'), (visionError) => {
                     Hoek.assert(!visionError, visionError);
                     app.views({
@@ -93,17 +100,21 @@ class HapiRunner {
                         "layoutPath": Path.join(__dirname, 'oauth', 'pages', 'layout'),
                         "partialsPath": Path.join(__dirname, 'oauth', 'pages', 'partials')
                     });
-                    
+
                     const signinRoute = new SigninRoute();
                     app.route({
                         "method": 'GET',
                         "path": '/signin',
-                        "handler": signinRoute.get
+                        "config": {
+                            "handler": signinRoute.get
+                        }
                     });
                     app.route({
                         "method": 'POST',
                         "path": '/signin',
-                        "handler": signinRoute.post
+                        "config": {
+                            "handler": signinRoute.post
+                        }
                     });
                 });
                 // Inert

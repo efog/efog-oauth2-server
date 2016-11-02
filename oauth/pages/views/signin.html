@@ -1,7 +1,7 @@
 <div class="row">
 	<div class="col-sm-0 col-md-3 col-lg-4">&nbsp;</div>
-	<form method="POST" action="signin">
-		<input type="hidden" id="aft-input" name="aft" value="{{ aft }}"></input>
+	<form method="POST" action="signin?response_type={{ response_type }}&redirect_url={{ redirect_url }}&client_id={{ client_id }}&scope={{ scope }}&state={{ state }}">
+		<input type="hidden" id="crumb-input" name="crumb" value="{{ crumb }}"></input>
 		<input type="hidden" id="client_id-input" name="client_id" value="{{ client_id }}"></input>
 		<input type="hidden" id="redirect_url-input" name="redirect_url" value="{{ redirect_url }}"></input>
 		<input type="hidden" id="response_type-input" name="response_type" value="{{ response_type }}"></input>
@@ -13,14 +13,17 @@
 					<h4>Sign in</h4>
 				</div>
 				<div class="panel-body">
+					{{#if signin_error}}
+					<div class="alert alert-danger" role="alert">{{signin_error}}</div>
+					{{/if}}
 					<div class="input-group">
 						<span class="input-group-addon" id="sizing-addon2"><i class="fa fa-user" aria-hidden="true"></i></span>
-						<input type="text" class="form-control" placeholder="Username" aria-describedby="sizing-addon2">
+						<input type="text" class="form-control" placeholder="Username" name="username" aria-describedby="sizing-addon2">
 					</div>
 					<p>&nbsp;</p>
 					<div class="input-group">
 						<span class="input-group-addon" id="sizing-addon2"><i class="fa fa-key" aria-hidden="true"></i></span>
-						<input type="password" class="form-control" placeholder="Password" aria-describedby="sizing-addon2">
+						<input type="password" class="form-control" placeholder="Password" name="password" aria-describedby="sizing-addon2">
 					</div>
 				</div>
 				<div class="panel-footer">

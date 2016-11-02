@@ -1,4 +1,9 @@
+const TokenService = require('../token-service').TokenService;
 const BaseRoute = require('./base-route').BaseRoute;
+const moment = require('moment');
+const guid = require('../../tools/guid').guid;
+
+const INVALID_USERNAME_PASSWORD = "INVALID_USERNAME_PASSWORD";
 
 /**
  * Sign in route
@@ -27,15 +32,15 @@ class SigninRoute extends BaseRoute {
          */
         this.get = (request, reply) => {
             const viewData = {
+                "signin_error": request.query.signin_error ? INVALID_USERNAME_PASSWORD : null,
+                "crumb": request.plugins.crumb,
                 "client_id": request.query.client_id,
                 "redirect_url": request.query.redirect_url,
                 "response_type": request.query.response_type,
                 "state": request.query.state,
                 "scope": request.query.scope
             };
-            const afToken = this.getAntiForgeryToken(`${viewData.redirect_url}+-+${viewData.client_id}`);
-            viewData.aft = afToken;
-            reply.view('signin', viewData).state('aft', afToken);
+            reply.view('signin', viewData);
         };
 
         /**
@@ -47,11 +52,32 @@ class SigninRoute extends BaseRoute {
          * @returns {undefined}
          */
         this.post = (request, reply) => {
-            const viewData = {
-                "aft": request.payload.aft
-            };
-            reply.view('signin', viewData);
+            TokenService.getBearerToken(request.payload.username, request.payload.password)
+                .then((account) => {
+                    // check if user has allowed client_id
+                    // offer to add if not
+                    // redirect to oauth/authorization with parameters when response_type = code
+                    const viewData = {
+                        "client_id": request.payload.client_id,
+                        "redirect_url": request.payload.redirect_url,
+                        "response_type": request.payload.response_type,
+                        "state": request.payload.state,
+                        "scope": request.payload.scope
+                    };
+                    reply.view('signin', viewData);
+                })
+                .catch((error) => {
+                    const viewData = {
+                        "client_id": request.payload.client_id,
+                        "redirect_url": request.payload.redirect_url,
+                        "response_type": request.payload.response_type,
+                        "state": request.payload.state,
+                        "scope": request.payload.scope
+                    };
+                    reply.redirect(`signin?response_type=${viewData.response_type}&redirect_url=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=1`);
+                });
         };
+
     }
 }
 
