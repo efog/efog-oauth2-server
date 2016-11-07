@@ -1,9 +1,11 @@
+const messages = require('./messages').Messages;
 const Account = require('./model/account').Account;
 const Promise = require('bluebird');
 const moment = require('moment');
 const getter = require('../tools/getter');
 const ul = require('../tools/urload');
 const njwt = require('njwt');
+const errors = require('../tools/errors');
 const privateKeyUrl = ul.urload(process.env.APP_JWT_PRIVATE_KEY_URL);
 const publicKeyUrl = ul.urload(process.env.APP_JWT_PUBLIC_KEY_URL);
 
@@ -19,18 +21,18 @@ class TokenService {
 /**
  * Gets JWT for account
  * 
- * @param {string} accountName account name
+ * @param {string} account account object
  * @returns {object} JWT object 
  */
-function getJwt(accountName) {
+function getJwt(account) {
     const promise = new Promise((resolve, reject) => {
         const issuer = process.env.APP_JWT_ISSUER;
-        if (!issuer || !privateKeyUrl) {
-            throw new Error("JWT ENV ERROR");
+        if (!issuer || !publicKeyUrl) {
+            throw new errors.ApplicationError(messages.ENV_ERROR);
         }
         const claims = {
             "iss": issuer,
-            "sub": accountName,
+            "sub": account.accountName,
             "scope": "self"
         };
         TokenService.getPrivateKey()
@@ -45,20 +47,45 @@ function getJwt(accountName) {
 }
 
 /**
+ * Verifies the token against corresponding private key
+ * 
+ * @param {string} token compact token to verify
+ * @returns {object} unpacked token
+ */
+TokenService.verifyJwt = function (token) {
+    const promise = new Promise((resolve, reject) => { 
+        TokenService.getPublicKey()
+            .then((publicKey) => {
+                const unpacked = njwt.verify(token, publicKey, "RS256");
+                return resolve(unpacked);
+            })
+            .catch(reject);
+
+    });
+    return promise;
+};
+
+/**
  * Gets bearer token
  * 
  * @param {string} accountName account name
  * @param {string} accountPassword account password
+ * @param {string} clientId target client id
  * @returns {object} JWT object 
  */
-TokenService.getBearerToken = function (accountName, accountPassword) {
+TokenService.getBearerToken = function (accountName, accountPassword, clientId) {
     return new Promise((resolve, reject) => {
+        let targetAccount = null;
         return Account.findByNameAndPassword(accountName, accountPassword)
             .then((account) => {
-                if (account) {
-                    return getJwt(accountName);
+                if (!account) {
+                    throw new errors.ApplicationError(messages.NO_ACCOUNT);
                 }
-                throw new Error('401: ACCOUNT NOT FOUND');
+                if (clientId && !account.hasClient(clientId)) {
+                    throw new errors.ApplicationError(messages.NO_CLIENT);
+                }
+                targetAccount = account;
+                return getJwt(account);
             })
             .then((token) => {
                 const accessToken = {

@@ -2,6 +2,9 @@ const cookie = require('cookie');
 const crypto = require('crypto');
 const appHmac = process.env.APP_HMAC_SECRET;
 const guid = require('../../tools/guid').guid;
+const Promise = require('bluebird');
+const errors = require('../../tools/errors');
+const TokenService = require('../../oauth/token-service').TokenService;
 
 /**
  * 
@@ -11,7 +14,7 @@ const guid = require('../../tools/guid').guid;
 class BaseController {
 
     constructor() {
-
+        this.bearerTokenRegex = new RegExp(/(.*)Bearer(.*)/gi);
         this._pendingCookies = [];
         this.codes = {
             "OK": 200,
@@ -33,6 +36,56 @@ class BaseController {
             "NOTFOUND": "NOTFOUND",
             "INTERNALSERVERERROR": "INTERNALSERVERERROR",
             "REDIRECT": "REDIRECT"
+        };
+
+        /**
+         * Sets verified JWT from request object from authorization header
+         * 
+         * @param {object} req request http object
+         * @param {object} res response http object
+         * 
+         * @returns {Promise} an execution promise
+         */
+        this.setJwtFromRequest = (req, res) => {
+            const promise = new Promise((resolve, reject) => {
+                return this.getRequestToken(req)
+                    .then((token) => {
+                        return TokenService.verifyJwt(token)
+                            .then((jwt) => {
+                                req.jwt = jwt;
+                                return resolve();
+                            })
+                            .catch((error) => {
+                                return reject(new errors.ApplicationError(error));
+                            });
+                    })
+                    .catch((error) => {
+                        return reject(error);
+                    });
+            });
+            return promise;
+        };
+
+        /** 
+         * Returns token in request (cookie, header, session?)
+         * 
+         * @param {request} req http request object
+         * @returns {Promise} an execution promise 
+        */
+        this.getRequestToken = (req) => {
+            const promise = new Promise((resolve, reject) => {
+                let token = null;
+                const fromAuthHeader = req.swagger.params.Authorization.value ? this.bearerTokenRegex.exec(req.swagger.params.Authorization.value)[2] : null;
+                const fromCookie = req.headers.cookie;
+                if (fromAuthHeader) {
+                    token = fromAuthHeader;
+                }
+                if (fromCookie) {
+                    console.log(cookie);
+                }
+                return resolve(token);
+            });
+            return promise;
         };
 
         /**

@@ -1,8 +1,8 @@
 const Account = require('./model/account').Account;
 const Logger = require('../tools/logger').Logger;
 const Promise = require('bluebird');
-
-const NO_CLIENT = "400 NO_CLIENT";
+const messages = require('./messages').Messages;
+const errors = require('../tools/errors');
 
 /**
  * Authorization service class
@@ -36,7 +36,7 @@ class AuthorizationService {
             Account.findByApplicationKey(clientId)
                 .then((account) => {
                     if (!account) {
-                        return reject(new Error(NO_CLIENT));
+                        return reject(new errors.AuthorizationError(messages.NO_ACCOUNT));
                     }
                     for (let idx = 0; idx < account.clients.length; idx++) {
                         const client = account.clients[idx];
@@ -44,7 +44,7 @@ class AuthorizationService {
                             return resolve(client);
                         }
                     }
-                    return reject(new Error(NO_CLIENT));
+                    return reject(new new errors.ClientError(messages.NO_CLIENT));
                 })
                 .catch((error) => {
                     return reject(error);

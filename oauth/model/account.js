@@ -2,6 +2,8 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const crypto = require('crypto');
 const guid = require("../../tools/guid").guid;
+const messages = require('../messages').Messages;
+const errors = require('../../tools/errors');
 
 /**
  * Define account document schema
@@ -174,13 +176,13 @@ exports.AccountSchema.statics.findByNameAndPassword = function (accountName, acc
                 if (targetAccount) {
                     return account.validateOwnership(accountPassword);
                 }
-                return reject(new Error("401: ACCOUNT NOT FOUND"));
+                return reject(new errors.AuthorizationError(messages.NO_ACCOUNT));
             })
             .then((isowner) => {
                 if (isowner) {
                     return resolve(targetAccount);
                 }
-                return reject(new Error("401: ACCOUNT OWNERSHIP DENIED"));
+                return reject(new errors.AuthorizationError(messages.INVALID_CREDENTIALS));
             });
     });
     return promise;

@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const crypto = require('crypto');
 const moment = require('moment');
 const azure = require('azure-storage');
+const errors = require('../../tools/errors');
 
 /**
  * ClientUser class
@@ -105,7 +106,7 @@ class ClientUser {
  */
 ClientUser.generateUserkey = function (clientId, username, password) {
     if (!process.env.APP_HMAC_SECRET) {
-        throw new Error('NO APP HMAC SECRET');
+        throw new errors.ApplicationError('NO APP HMAC SECRET');
     }
     const promise = new Promise((resolve, reject) => {
         try {

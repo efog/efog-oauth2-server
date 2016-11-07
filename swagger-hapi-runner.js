@@ -8,6 +8,7 @@ const RegisterRoute = require('./oauth/routes/register-route').RegisterRoute;
 const RegisterClientRoute = require('./oauth/routes/register-client-route').RegisterClientRoute;
 const SigninRoute = require('./oauth/routes/signin-route').SigninRoute;
 const hapiBunyan = require("hapi-bunyan");
+const jwtAuth = require('./oauth/plugins/jwt-auth').jwtAuth;
 
 /**
  * HAPI API Server
@@ -53,6 +54,7 @@ class HapiRunner {
                 if (err) {
                     throw new Error(err.message);
                 }
+                console.log(`¯\_(ツ)_/¯`);
                 // ¯\_(ツ)_/¯
                 HapiRunner.server = swaggerHapi;
                 const port = process.env.PORT || 2406;
@@ -65,8 +67,13 @@ class HapiRunner {
                     };
                 };
 
-                // Crumb
-                app.register({
+                const jwtAuthConfig = {
+                    "register": jwtAuth,
+                    "options": {
+                        "logger": logger
+                    }
+                };
+                const crumbConfig = {
                     "register": Crumb,
                     "options": {
                         "cookieOptions": {
@@ -77,19 +84,19 @@ class HapiRunner {
                             "domain": process.env.APP_NET_DOMAIN
                         }
                     }
-                });
-
-                // Swagger
-                app.register(swaggerHapi.plugin);
-
-                // Bunyan
+                };
                 const bunyanConfig = {
                     "register": hapiBunyan,
                     "options": {
                         "logger": logger
                     }
                 };
-                app.register(bunyanConfig);
+                app.register([jwtAuthConfig, crumbConfig, bunyanConfig, swaggerHapi.plugin], (error) => {
+                    if (error) {
+                        logger.error(error);
+                    }
+                });
+
                 app.register(require('vision'), (visionError) => {
                     Hoek.assert(!visionError, visionError);
                     app.views({

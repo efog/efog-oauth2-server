@@ -1,8 +1,8 @@
 const BaseController = require('./base-controller');
 const tokenEndpoint = require('../../oauth/token-endpoint');
+const messages = require('../../oauth/messages').Messages;
 
 const PASSWORD = 'password';
-const INVALID_GRANT_TYPE = 'INVALID_GRANT_TYPE';
 
 /**
  * Token controller class
@@ -23,11 +23,11 @@ class TokenController extends BaseController {
                 'value': (req, res) => {
                     const grantType = req.swagger.params.grant_type ? req.swagger.params.grant_type.value : null;
                     if (!grantType || !this.tokenEndpoint[grantType]) {
-                        return this.sendBadRequest(req, res, INVALID_GRANT_TYPE);
+                        return this.sendBadRequest(req, res, messages.INVALID_GRANT_TYPE);
                     }
                     const endpointCallback = (err, result) => {
                         if (err) {
-                            if (err.message.startsWith("401")) {
+                            if (err.message === messages.INVALID_CREDENTIALS) {
                                 return this.sendUnauthorized(req, res, err.message);
                             }
                             return this.sendInternalServerError(req, res, err.message);

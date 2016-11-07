@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const errors = require('../../../tools/errors');
 
 const dbURI = process.env.DBURL || "mongodb://127.0.0.1:27017/efog-oauth2";
 
@@ -26,6 +27,6 @@ mongoose.connection.on("disconnected", function () {
 process.on("SIGINT", function () {
     mongoose.connection.close(function () {
         console.log("Mongoose default connection disconnected through app termination");
-        throw new Error(`MongoDB Connection closed`);
+        throw new errors.ApplicationError(`MongoDB Connection closed`);
     });
 }); 

@@ -28,16 +28,33 @@ describe('token service', () => {
                 target = token;
                 expect(target).not.toEqual(null);
                 expect(target.expires_in).toEqual(24 * 60 * 60);
-                return TokenService.getPublicKey();
-            })
-            .then((key) => {
-                return njwt.verifyAsync(target.access_token, key, "RS256");
+                return TokenService.verifyJwt(token).access_token;
             })
             .then((verified) => {
                 expect(verified).not.toEqual(null);
             })
             .catch((error) => {
                 expect(error).toEqual(null);
+            })
+            .finally(done);
+    });
+    it('should not validate token with invalid key', (done) => {
+        let target = null;
+        const promise = TokenService.getBearerToken("dev", "pass")
+            .then((token) => {
+                target = token;
+                expect(target).not.toEqual(null);
+                expect(target.expires_in).toEqual(24 * 60 * 60);
+                return TokenService.getPrivateKey();
+            })
+            .then((key) => {
+                return njwt.verifyAsync(target.access_token, key, "RS256");
+            })
+            .then((verified) => {
+                expect(verified).toEqual(null);
+            })
+            .catch((error) => {
+                expect(error).not.toEqual(null);
             })
             .finally(done);
     });

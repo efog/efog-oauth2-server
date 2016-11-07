@@ -33,27 +33,33 @@ class AuthorizationController extends BaseController {
         * @memberOf AuthorizationController
         */
         this.get = (req, res) => {
-            const requestPayload = {
-                "response_type": req.swagger.params.response_type ? req.swagger.params.response_type.value : null,
-                "client_id": req.swagger.params.client_id ? req.swagger.params.client_id.value : null,
-                "state": req.swagger.params.state ? req.swagger.params.state.value : null,
-                "redirect_uri": req.swagger.params.redirect_uri ? req.swagger.params.redirect_uri.value : null,
-                "scope": req.swagger.params.scope ? req.swagger.params.scope.value : null
-            };
-            if (requestPayload.response_type === code) {
-                return this.codeFlow(requestPayload)
-                    .then((result) => {
-                        const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
-                        this.sendRedirect(req, res, signinUrl);
-                    })
-                    .catch((error) => {
-                        if (error.message.startsWith('40')) {
-                            return this.sendBadRequest(req, res, error.message);
-                        }
-                        return this.sendInternalServerError(req, res, error);
-                    });
-            }
-            return this.sendNotFound(req, res);
+            this.setJwtFromRequest(req, res)
+                .then(() => {
+                    const requestPayload = {
+                        "response_type": req.swagger.params.response_type ? req.swagger.params.response_type.value : null,
+                        "client_id": req.swagger.params.client_id ? req.swagger.params.client_id.value : null,
+                        "state": req.swagger.params.state ? req.swagger.params.state.value : null,
+                        "redirect_uri": req.swagger.params.redirect_uri ? req.swagger.params.redirect_uri.value : null,
+                        "scope": req.swagger.params.scope ? req.swagger.params.scope.value : null
+                    };
+                    if (requestPayload.response_type === code) {
+                        return this.codeFlow(requestPayload)
+                            .then((result) => {
+                                const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
+                                this.sendRedirect(req, res, signinUrl);
+                            })
+                            .catch((error) => {
+                                if (error.message.startsWith('40')) {
+                                    return this.sendBadRequest(req, res, error.message);
+                                }
+                                return this.sendInternalServerError(req, res, error);
+                            });
+                    }
+                    return this.sendNotFound(req, res);
+                })
+                .catch((error) => {
+                    return this.sendBadRequest(req, res, error.message);
+                });
         };
 
         /**
@@ -66,7 +72,7 @@ class AuthorizationController extends BaseController {
          */
         this.codeFlow = (requestPayload) => {
             const promise = new Promise((resolve, reject) => {
-                
+
                 this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
                     .then((client) => {
                         return resolve(client);
