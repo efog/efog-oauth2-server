@@ -14,7 +14,6 @@ const TokenService = require('../../oauth/token-service').TokenService;
 class BaseController {
 
     constructor() {
-        this.bearerTokenRegex = new RegExp(/(.*)Bearer(.*)/gi);
         this._pendingCookies = [];
         this.codes = {
             "OK": 200,
@@ -75,7 +74,9 @@ class BaseController {
         this.getRequestToken = (req) => {
             const promise = new Promise((resolve, reject) => {
                 let token = null;
-                const fromAuthHeader = req.swagger.params.Authorization.value ? this.bearerTokenRegex.exec(req.swagger.params.Authorization.value)[2] : null;
+                const bearerTokenRegex = new RegExp(/(.*)Bearer(.*)/gi);
+                const fromAuthHeaderMatches = bearerTokenRegex.exec(req.swagger.params.Authorization.value);
+                const fromAuthHeader = fromAuthHeaderMatches ? fromAuthHeaderMatches[fromAuthHeaderMatches.length - 1].trim() : null;
                 const fromCookie = req.headers.cookie;
                 if (fromAuthHeader) {
                     token = fromAuthHeader;

@@ -6,6 +6,7 @@ const getter = require('../tools/getter');
 const ul = require('../tools/urload');
 const njwt = require('njwt');
 const errors = require('../tools/errors');
+const StaticCache = require('../tools/static-cache').StaticCache;
 const privateKeyUrl = ul.urload(process.env.APP_JWT_PRIVATE_KEY_URL);
 const publicKeyUrl = ul.urload(process.env.APP_JWT_PUBLIC_KEY_URL);
 
@@ -53,7 +54,7 @@ function getJwt(account) {
  * @returns {object} unpacked token
  */
 TokenService.verifyJwt = function (token) {
-    const promise = new Promise((resolve, reject) => { 
+    const promise = new Promise((resolve, reject) => {
         TokenService.getPublicKey()
             .then((publicKey) => {
                 const unpacked = njwt.verify(token, publicKey, "RS256");
@@ -105,7 +106,14 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
  * @returns {string} private key
  */
 TokenService.getPrivateKey = function () {
-    return getter.get(privateKeyUrl);
+    const action = () => {
+        return getter.get(privateKeyUrl);
+    };
+    const config = {
+        "key": privateKeyUrl,
+        "expires": 20000
+    };
+    return StaticCache.fetch(config, action);
 };
 
 /**
@@ -114,7 +122,14 @@ TokenService.getPrivateKey = function () {
  * @returns {string} public key
  */
 TokenService.getPublicKey = function () {
-    return getter.get(publicKeyUrl);
+    const action = () => {
+        return getter.get(publicKeyUrl);
+    };
+    const config = {
+        "key": publicKeyUrl,
+        "expires": 20000
+    };
+    return StaticCache.fetch(config, action);
 };
 
 exports.TokenService = TokenService;
