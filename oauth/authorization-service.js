@@ -35,22 +35,33 @@ class AuthorizationService {
         const promise = new Promise((resolve, reject) => {
             Account.findByApplicationKey(clientId)
                 .then((account) => {
-                    if (!account) {
-                        return reject(new errors.AuthorizationError(messages.NO_ACCOUNT));
-                    }
-                    for (let idx = 0; idx < account.clients.length; idx++) {
-                        const client = account.clients[idx];
-                        if (client.redirectUrl === redirectUrl) {
-                            return resolve(client);
+                    if (account) {
+                        for (let idx = 0; idx < account.clients.length; idx++) {
+                            const client = account.clients[idx];
+                            if (client.redirectUrl === redirectUrl) {
+                                return resolve(client);
+                            }
                         }
                     }
-                    return reject(new new errors.ClientError(messages.NO_CLIENT));
+                    return reject(new errors.ClientError(messages.NO_CLIENT));
                 })
                 .catch((error) => {
                     return reject(error);
                 });
         });
         return promise;
+    }
+
+    /**
+     * Find account by account name
+     * 
+     * @param {any} accountName account name
+     * @returns {Promise} execution promise
+     * 
+     * @memberOf AuthorizationService
+     */
+    findAccount(accountName) {
+        return Account.findByName(accountName);
     }
 }
 exports.AuthorizationService = AuthorizationService;

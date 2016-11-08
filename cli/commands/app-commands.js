@@ -45,33 +45,19 @@ function add(argv) {
                     })
                     .then((isOwner) => {
                         questions.length = 0;
-                        if (!argv["application-name"]) {
+                        if (!argv["application-key"]) {
                             questions.push(
                                 {
                                     "type": "input",
-                                    "name": "applicationName",
-                                    "message": "Enter application name"
-                                });
-                            questions.push(
-                                {
-                                    "type": "input",
-                                    "name": "applicationDescription",
-                                    "message": "Enter application description"
-                                });
-                            questions.push(
-                                {
-                                    "type": "input",
-                                    "name": "redirectUrl",
-                                    "message": "Enter redirection url"
+                                    "name": "applicationKey",
+                                    "message": "Enter application key"
                                 });
                         }
                         return inquirer.prompt(questions);
                     })
                     .then((clientAnswers) => {
-                        const applicationName = clientAnswers.applicationName;
-                        const applicationDescription = clientAnswers.applicationDescription;
-                        const redirectUrl = clientAnswers.redirectUrl;
-                        return account.addClient(applicationName, applicationDescription, redirectUrl);
+                        const applicationKey = clientAnswers.applicationKey;
+                        return account.addApplication(applicationKey);
                     })
                     .then(resolve)
                     .catch(reject);

@@ -3,6 +3,8 @@ const BaseController = require('./base-controller');
 const Promise = require('bluebird');
 const code = "code";
 const guid = require('../../tools/guid').guid;
+const errors = require('../../tools/errors');
+const messages = require('../../oauth/messages').Messages;
 
 /**
  * Authorization API Controller
@@ -43,16 +45,12 @@ class AuthorizationController extends BaseController {
                         "scope": req.swagger.params.scope ? req.swagger.params.scope.value : null
                     };
                     if (requestPayload.response_type === code) {
-                        return this.codeFlow(requestPayload)
-                            .then((result) => {
-                                const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
-                                this.sendRedirect(req, res, signinUrl);
-                            })
+                        return this.codeFlow(req, res, requestPayload)
                             .catch((error) => {
-                                if (error.message.startsWith('40')) {
+                                if (error instanceof errors.ApplicationError) {
                                     return this.sendBadRequest(req, res, error.message);
                                 }
-                                return this.sendInternalServerError(req, res, error);
+                                return this.sendInternalServerError(req, res, error.message);
                             });
                     }
                     return this.sendNotFound(req, res);
@@ -65,17 +63,28 @@ class AuthorizationController extends BaseController {
         /**
          * Process code flow
          * 
+         * @param {any} req request content
+         * @param {any} res response object
          * @param {any} requestPayload request payload
          * @returns {undefined}
          * 
          * @memberOf AuthorizationController
          */
-        this.codeFlow = (requestPayload) => {
+        this.codeFlow = (req, res, requestPayload) => {
             const promise = new Promise((resolve, reject) => {
-
+                const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
                 this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
                     .then((client) => {
-                        return resolve(client);
+                        if (req.jwt) {
+                            return this.authorizationService.findAccount(req.jwt.body.sub)
+                                .then((account) => {
+                                    if (account.hasApp(requestPayload.client_id)) {
+                                        return this.sendRedirect(req, res, requestPayload.redirect_uri);
+                                    }
+                                    return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
+                                });
+                        }
+                        return this.sendRedirect(req, res, signinUrl);
                     })
                     .catch((error) => {
                         return reject(error);

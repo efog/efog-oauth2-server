@@ -49,14 +49,17 @@ class BaseController {
             const promise = new Promise((resolve, reject) => {
                 return this.getRequestToken(req)
                     .then((token) => {
-                        return TokenService.verifyJwt(token)
-                            .then((jwt) => {
-                                req.jwt = jwt;
-                                return resolve();
-                            })
-                            .catch((error) => {
-                                return reject(new errors.ApplicationError(error));
-                            });
+                        if (token) {
+                            return TokenService.verifyJwt(token)
+                                .then((jwt) => {
+                                    req.jwt = jwt;
+                                    return resolve();
+                                })
+                                .catch((error) => {
+                                    return reject(new errors.ApplicationError(error));
+                                });
+                        }
+                        return resolve();
                     })
                     .catch((error) => {
                         return reject(error);
@@ -82,7 +85,7 @@ class BaseController {
                     token = fromAuthHeader;
                 }
                 if (fromCookie) {
-                    console.log(cookie);
+                    token = cookie.parse(fromCookie).jwt_auth;
                 }
                 return resolve(token);
             });

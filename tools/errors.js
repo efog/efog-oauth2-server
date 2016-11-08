@@ -1,5 +1,5 @@
 /**
- * Application error subclas
+ * Application error subclass
  * 
  * @class ApplicationError
  * @extends {Error}

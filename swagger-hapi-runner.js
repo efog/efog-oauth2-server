@@ -6,6 +6,7 @@ const Path = require('path');
 const Logger = require('./tools/logger').Logger;
 const RegisterRoute = require('./oauth/routes/register-route').RegisterRoute;
 const RegisterClientRoute = require('./oauth/routes/register-client-route').RegisterClientRoute;
+const HomeRoute = require('./oauth/routes/home-route').HomeRoute;
 const SigninRoute = require('./oauth/routes/signin-route').SigninRoute;
 const hapiBunyan = require("hapi-bunyan");
 const jwtAuth = require('./oauth/plugins/jwt-auth').jwtAuth;
@@ -111,11 +112,26 @@ class HapiRunner {
                     });
 
                     const signinRoute = new SigninRoute();
+                    const homeRoute = new HomeRoute();
+                    app.route({
+                        "method": 'GET',
+                        "path": '/',
+                        "config": {
+                            "handler": homeRoute.get
+                        }
+                    });
                     app.route({
                         "method": 'GET',
                         "path": '/signin',
                         "config": {
                             "handler": signinRoute.get
+                        }
+                    });
+                    app.route({
+                        "method": 'GET',
+                        "path": '/signout',
+                        "config": {
+                            "handler": signinRoute.out
                         }
                     });
                     app.route({

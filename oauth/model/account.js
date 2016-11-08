@@ -38,6 +38,24 @@ exports.AccountSchema = new mongoose.Schema({
         "required": true,
         "type": Date
     },
+    "apps": [
+        {
+            "applicationKey": {
+                "type": String,
+                "required": true,
+                "index": true
+            },
+            "enabled": {
+                "type": Boolean,
+                "default": true,
+                "required": true
+            },
+            "scopes": {
+                "type": [String],
+                "default": ["account.READ"]
+            }
+        }
+    ],
     "clients": [{
         "applicationSecret": {
             "required": true,
@@ -189,18 +207,6 @@ exports.AccountSchema.statics.findByNameAndPassword = function (accountName, acc
 };
 
 /**
- * Adds a client to account and saves
- * 
- * @param {object} argv client arguments
- * @returns {Promise} an execution promise
- */
-exports.AccountSchema.statics.addClient = function (argv) {
-    const accountName = argv.accountName;
-    const applicationName = argv.applicationName;
-    const accountPassword = argv.accountPassword;
-};
-
-/**
  * Generate an account secret for instance with password
  * 
  * @param {string} password password to generate key against
@@ -247,13 +253,43 @@ exports.AccountSchema.methods.generateApplicationKey = function (applicationName
 /**
  * Adds an application to the account
  * 
+ * @param {string} applicationKey application key
+ * 
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.methods.addApplication = function (applicationKey) {
+    return exports.Account.findByApplicationKey(applicationKey)
+        .then((client) => {
+            if (client) {
+                let found = false;
+                for (let idx = 0; idx < this.apps.length; idx++) {
+                    found = this.apps[idx].applicationKey === applicationKey;
+                    if (found) {
+                        break;
+                    }
+                }
+                if (!found) {
+                    this.apps.push({
+                        "applicationKey": applicationKey,
+                        "scopes": client.scopes
+                    });
+                }
+                return this.save();
+            }
+            throw new errors.ClientError(messages.INVALID_CLIENT);
+        });
+};
+
+/**
+ * Adds a client to the account
+ * 
  * @param {string} applicationName application name
  * @param {string} applicationDescription application description
  * @param {string} redirectUrl redirection url
  * 
  * @returns {Promise} an execution promise
  */
-exports.AccountSchema.methods.addApplication = function (applicationName, applicationDescription, redirectUrl) {
+exports.AccountSchema.methods.addClient = function (applicationName, applicationDescription, redirectUrl) {
     return this.generateApplicationSecret(applicationName)
         .then((secret) => {
             const app = {
@@ -298,6 +334,21 @@ exports.AccountSchema.methods.validateOwnership = function (password) {
 exports.AccountSchema.methods.hasClient = function (clientId) {
     for (let idx = 0; idx < this.clients.length; idx++) {
         if (this.clients[idx].applicationKey === clientId) {
+            return true;
+        }
+    }
+    return false;
+};
+
+/**
+ * Account has app id
+ * 
+ * @param {string} applicationKey client identification
+ * @returns {boolean} has clientid
+ */
+exports.AccountSchema.methods.hasApp = function (applicationKey) {
+    for (let idx = 0; idx < this.clients.length; idx++) {
+        if (this.apps[idx].applicationKey === applicationKey) {
             return true;
         }
     }

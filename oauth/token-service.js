@@ -82,7 +82,7 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
                 if (!account) {
                     throw new errors.ApplicationError(messages.NO_ACCOUNT);
                 }
-                if (clientId && !account.hasClient(clientId)) {
+                if (clientId && !account.hasApp(clientId)) {
                     throw new errors.ApplicationError(messages.NO_CLIENT);
                 }
                 targetAccount = account;

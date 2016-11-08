@@ -32,7 +32,7 @@ class SigninRoute extends BaseRoute {
          */
         this.get = (request, reply) => {
             const viewData = {
-                "signin_error": request.query.signin_error ? messages.INVALID_USERNAME_PASSWORD : null,
+                "signin_error": request.query.signin_error ? request.query.signin_error : null,
                 "crumb": request.plugins.crumb,
                 "client_id": request.query.client_id,
                 "redirect_url": request.query.redirect_url,
@@ -41,6 +41,25 @@ class SigninRoute extends BaseRoute {
                 "scope": request.query.scope
             };
             reply.view('signin', viewData);
+        };
+
+        /**
+         * Handles sign out action
+         * 
+         * @param {object} request hapijs request object
+         * @param {object} reply hapijs reply object
+         * 
+         * @returns {undefined}
+         */
+        this.out = (request, reply) => {
+            reply.state("jwt_auth", null, {
+                "path": "/oauth/authorization",
+                "isSecure": false,
+                "isHttpOnly": true,
+                "encoding": "none",
+                "domain": process.env.APP_NET_DOMAIN
+            });
+            reply.redirect("/");
         };
 
         /**
@@ -64,12 +83,22 @@ class SigninRoute extends BaseRoute {
             };
             TokenService.getBearerToken(request.payload.username, request.payload.password, request.payload.client_id)
                 .then((token) => {
+                    if (viewData.response_type === "code") {
+                        reply.state("jwt_auth", token.access_token, {
+                            "path": "/oauth/authorization",
+                            "isSecure": false,
+                            "isHttpOnly": true,
+                            "encoding": "none",
+                            "domain": process.env.APP_NET_DOMAIN
+                        });
+                        return reply.redirect(`/oauth/authorization?response_type=code&redirect_uri=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
+                    }
                     // check if user has allowed client_id
                     // offer to add if not
                     return reply.view('signin', viewData);
                 })
                 .catch((error) => {
-                    sendBackToSignin(error);
+                    sendBackToSignin(error.message);
                 });
         };
 
