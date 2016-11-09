@@ -1,8 +1,12 @@
 const Account = require('./model/account').Account;
+const AuthorizationCode = require('./model/authorization-code').AuthorizationCode;
 const Logger = require('../tools/logger').Logger;
 const Promise = require('bluebird');
 const messages = require('./messages').Messages;
 const errors = require('../tools/errors');
+const guid = require('../tools/guid').guid;
+const moment = require('moment');
+const atob = require('atob');
 
 /**
  * Authorization service class
@@ -67,17 +71,23 @@ class AuthorizationService {
     /**
      * Gets a stored authorization code for account and clientId
      * 
-     * @param {Account} account account details object
-     * @param {string} clientId target client id
+     * @param {string} token access token
+     * @param {string} redirectUrl redirection url
+     * @param {string} clientId client identifier
+     * 
      * @returns {Promise} execution promise
      * 
      * @memberOf AuthorizationService
      */
-    getAuthorizationCode(account, clientId) {
-        const promise = new Promise((resolve, reject) => { 
-            return resolve('abc123');
-        });
-        return promise;
+    getAuthorizationCode(token, redirectUrl, clientId) {
+        const code = new AuthorizationCode();
+        code.code = guid();
+        code.token = token;
+        code.expiry = moment().add(1, 'month');
+        code.creationDate = moment();
+        code.clientId = clientId;
+        code.redirectUrl = redirectUrl;
+        return code.save();
     }
 }
 exports.AuthorizationService = AuthorizationService;

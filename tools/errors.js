@@ -8,6 +8,15 @@ class ApplicationError extends Error { }
 exports.ApplicationError = ApplicationError;
 
 /**
+ * System error subclass
+ * 
+ * @class SystemError
+ * @extends {exports.ApplicationError}
+ */
+class SystemError extends Error { }
+exports.SystemError = SystemError;
+
+/**
  * Authorization error subclass
  * 
  * @class AuthorizationError

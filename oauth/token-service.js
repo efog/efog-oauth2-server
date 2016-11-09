@@ -1,5 +1,6 @@
 const messages = require('./messages').Messages;
 const Account = require('./model/account').Account;
+const AuthorizationCode = require('./model/authorization-code').AuthorizationCode;
 const Promise = require('bluebird');
 const moment = require('moment');
 const getter = require('../tools/getter');
@@ -72,7 +73,7 @@ TokenService.verifyJwt = function (token) {
  * @param {string} accountName account name
  * @param {string} accountPassword account password
  * @param {string} clientId target client id
- * @returns {object} JWT object 
+ * @returns {Promise} execution promise
  */
 TokenService.getBearerToken = function (accountName, accountPassword, clientId) {
     return new Promise((resolve, reject) => {
@@ -97,6 +98,24 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
                 return resolve(accessToken);
             })
             .catch(reject);
+    });
+};
+
+/**
+ * Returns a bearer token from authorization code
+ * 
+ * @param {object} grant grant request object
+ * @returns {Promise} execution promise
+ */
+TokenService.getBearerTokenFromCode = function (grant) {
+    return AuthorizationCode.fromCode(grant.code).then((authCode) => {
+        if (authCode && authCode.redirectUrl !== grant.redirect_url && authCode.clientId !== grant.client_id) {
+            throw new errors.ClientError(messages.INVALID_CLIENT);
+        }
+        if (!authCode) {
+            throw new errors.AuthorizationError(messages.INVALID_CODE);
+        }
+        return authCode.token;
     });
 };
 

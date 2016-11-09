@@ -35,7 +35,13 @@ class TokenEndpoint {
      * @memberOf TokenEndpoint
      */
     authorizationCode(grant, callback) {
-
+        return TokenService.getBearerTokenFromCode(grant)
+            .then((token) => {
+                callback(null, token);
+            })
+            .catch((error) => {
+                callback(error, null);
+            });
     }
 }
 exports.TokenEndpoint = TokenEndpoint;

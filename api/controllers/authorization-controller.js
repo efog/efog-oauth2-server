@@ -53,7 +53,7 @@ class AuthorizationController extends BaseController {
                                 return this.sendInternalServerError(req, res, error.message);
                             });
                     }
-                    return this.sendNotFound(req, res);
+                    return this.sendBadRequest(req, res, messages.INVALID_RESPONSE_TYPE);
                 })
                 .catch((error) => {
                     return this.sendBadRequest(req, res, error.message);
@@ -79,7 +79,7 @@ class AuthorizationController extends BaseController {
                             return this.authorizationService.findAccount(req.jwt.body.sub)
                                 .then((account) => {
                                     if (account.hasApp(requestPayload.client_id)) {
-                                        return this.authorizationService.getAuthorizationCode(account, requestPayload.client_id)
+                                        return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
                                             .then((authCode) => {
                                                 const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}`;
                                                 return this.sendRedirect(req, res, redirectUrl);

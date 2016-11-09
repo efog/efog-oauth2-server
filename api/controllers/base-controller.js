@@ -53,16 +53,14 @@ class BaseController {
                             return TokenService.verifyJwt(token)
                                 .then((jwt) => {
                                     req.jwt = jwt;
+                                    req.token = token;
                                     return resolve();
                                 })
                                 .catch((error) => {
-                                    return reject(new errors.ApplicationError(error));
+                                    return resolve();
                                 });
                         }
                         return resolve();
-                    })
-                    .catch((error) => {
-                        return reject(error);
                     });
             });
             return promise;
