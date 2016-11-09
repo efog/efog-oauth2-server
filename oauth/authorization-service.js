@@ -63,5 +63,21 @@ class AuthorizationService {
     findAccount(accountName) {
         return Account.findByName(accountName);
     }
+
+    /**
+     * Gets a stored authorization code for account and clientId
+     * 
+     * @param {Account} account account details object
+     * @param {string} clientId target client id
+     * @returns {Promise} execution promise
+     * 
+     * @memberOf AuthorizationService
+     */
+    getAuthorizationCode(account, clientId) {
+        const promise = new Promise((resolve, reject) => { 
+            return resolve('abc123');
+        });
+        return promise;
+    }
 }
 exports.AuthorizationService = AuthorizationService;
