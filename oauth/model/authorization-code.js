@@ -69,7 +69,7 @@ class AuthorizationCode {
                 }
             },
             "clientId": {
-                "get": () => { 
+                "get": () => {
                     return this._clientId;
                 },
                 "set": (value) => {
@@ -123,19 +123,27 @@ AuthorizationCode.fromCode = (code) => {
             if (!success) {
                 throw new errors.SystemError(messages.AZURE_TABLE_ERROR);
             }
-            return tableService.service.retrieveEntityAsync('authorizationcodes', AuthorizationCode.PartitionKey, code);
+            const query = new azure.TableQuery()
+                .where(`RowKey eq ?`, code)
+                .and(`PartitionKey eq ?`, AuthorizationCode.PartitionKey)
+                .and(azure.TableQuery.dateFilter('expiry', 'gt', new Date()));
+            return tableService.service.queryEntitiesAsync('authorizationcodes', query, null);
         })
         .then((result) => {
-            const authCode = {
-                "code": result.RowKey._,
-                "expiry": result.expiry._,
-                "creationDate": result.creationDate._,
-                "token": result.token._,
-                "clientId": result.clientId._,
-                "redirectUrl": result.redirectUrl._
-            };
-            const authorizationCode = new AuthorizationCode(authCode);
-            return authorizationCode;
+            const row = result.entries.length === 1 ? result.entries[0] : null;
+            if (row) {
+                const authCode = {
+                    "code": row.RowKey._,
+                    "expiry": row.expiry._,
+                    "creationDate": row.creationDate._,
+                    "token": row.token._,
+                    "clientId": row.clientId._,
+                    "redirectUrl": row.redirectUrl._
+                };
+                const authorizationCode = new AuthorizationCode(authCode);
+                return authorizationCode;
+            }
+            throw new errors.ApplicationError(messages.INVALID_CODE);
         });
 };
 exports.AuthorizationCode = AuthorizationCode;

@@ -178,6 +178,22 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
 };
 
 /**
+ * Finds account by application key and application secret
+ * 
+ * @param {string} applicationKey application name
+ * @param {string} applicationSecret application secret
+ * 
+ * @returns {Promise} an execution promise
+ */
+exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicationKey, applicationSecret) {
+    return this.findOne({
+        "clients.applicationKey": applicationKey,
+        "clients.applicationSecret": applicationSecret
+    });
+};
+
+
+/**
  * Finds account by name and password
  * 
  * @param {string} accountName account name

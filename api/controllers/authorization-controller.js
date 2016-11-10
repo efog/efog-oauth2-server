@@ -71,30 +71,24 @@ class AuthorizationController extends BaseController {
          * @memberOf AuthorizationController
          */
         this.codeFlow = (req, res, requestPayload) => {
-            const promise = new Promise((resolve, reject) => {
-                const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
-                this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
-                    .then((client) => {
-                        if (req.jwt) {
-                            return this.authorizationService.findAccount(req.jwt.body.sub)
-                                .then((account) => {
-                                    if (account.hasApp(requestPayload.client_id)) {
-                                        return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
-                                            .then((authCode) => {
-                                                const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}`;
-                                                return this.sendRedirect(req, res, redirectUrl);
-                                            });
-                                    }
-                                    return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
-                                });
-                        }
-                        return this.sendRedirect(req, res, signinUrl);
-                    })
-                    .catch((error) => {
-                        return reject(error);
-                    });
-            });
-            return promise;
+            const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
+            return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
+                .then((client) => {
+                    if (req.jwt) {
+                        return this.authorizationService.findAccount(req.jwt.body.sub)
+                            .then((account) => {
+                                if (account.hasApp(requestPayload.client_id)) {
+                                    return this.authorizationService.getAuthorizationCode(req.token, client.redirectUrl, client.applicationKey)
+                                        .then((authCode) => {
+                                            const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}`;
+                                            return this.sendRedirect(req, res, redirectUrl);
+                                        });
+                                }
+                                return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
+                            });
+                    }
+                    return this.sendRedirect(req, res, signinUrl);
+                });
         };
     }
 }

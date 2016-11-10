@@ -108,15 +108,16 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
  * @returns {Promise} execution promise
  */
 TokenService.getBearerTokenFromCode = function (grant) {
-    return AuthorizationCode.fromCode(grant.code).then((authCode) => {
-        if (authCode && authCode.redirectUrl !== grant.redirect_url && authCode.clientId !== grant.client_id) {
-            throw new errors.ClientError(messages.INVALID_CLIENT);
-        }
-        if (!authCode) {
-            throw new errors.AuthorizationError(messages.INVALID_CODE);
-        }
-        return authCode.token;
-    });
+    return AuthorizationCode.fromCode(grant.code)
+        .then((authCode) => {
+            if (authCode && authCode.redirectUrl !== grant.redirect_url && authCode.clientId !== grant.client_id) {
+                throw new errors.ClientError(messages.INVALID_CLIENT);
+            }
+            if (!authCode) {
+                throw new errors.AuthorizationError(messages.INVALID_CODE);
+            }
+            return authCode.token;
+        });
 };
 
 /**

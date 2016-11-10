@@ -56,7 +56,8 @@ class TokenController extends BaseController {
                         return {
                             'code': params.code ? params.code.value : null,
                             'redirect_uri': params.redirect_url.value ? params.redirect_url.value : null,
-                            'client_id': params.client_id ? params.client_id.value : null
+                            'client_id': params.client_id.value ? params.client_id.value : null,
+                            'authorization': params.Authorization.value ? params.Authorization.value : null
                         };
                     default:
                         throw new Error(messages.INVALID_GRANT_TYPE);
