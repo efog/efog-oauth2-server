@@ -116,7 +116,7 @@ AuthorizationCode.PartitionKey = "authorizationcode";
  * 
  * @returns {Promise} execution promise
  */
-AuthorizationCode.fromCode = (code) => {
+AuthorizationCode.fromCode = (grant) => {
     const tableService = new TableStorageAdapter();
     return tableService.table("authorizationcodes")
         .then((success) => {
@@ -124,8 +124,10 @@ AuthorizationCode.fromCode = (code) => {
                 throw new errors.SystemError(messages.AZURE_TABLE_ERROR);
             }
             const query = new azure.TableQuery()
-                .where(`RowKey eq ?`, code)
+                .where(`RowKey eq ?`, grant.code)
                 .and(`PartitionKey eq ?`, AuthorizationCode.PartitionKey)
+                .and(`redirectUrl eq ?`, grant.redirect_uri)
+                .and(`clientId eq ?`, grant.client_id)
                 .and(azure.TableQuery.dateFilter('expiry', 'gt', new Date()));
             return tableService.service.queryEntitiesAsync('authorizationcodes', query, null);
         })

@@ -48,6 +48,8 @@ class AuthorizationController extends BaseController {
                         return this.codeFlow(req, res, requestPayload)
                             .catch((error) => {
                                 if (error instanceof errors.ApplicationError) {
+                                    // const redirectUrl = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                                    // return this.sendRedirect(req, res, redirectUrl);
                                     return this.sendBadRequest(req, res, error.message);
                                 }
                                 return this.sendInternalServerError(req, res, error.message);
@@ -80,7 +82,7 @@ class AuthorizationController extends BaseController {
                                 if (account.hasApp(requestPayload.client_id)) {
                                     return this.authorizationService.getAuthorizationCode(req.token, client.redirectUrl, client.applicationKey)
                                         .then((authCode) => {
-                                            const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}`;
+                                            const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}&state=${requestPayload.state}`;
                                             return this.sendRedirect(req, res, redirectUrl);
                                         });
                                 }

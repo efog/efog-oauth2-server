@@ -79,7 +79,8 @@ class SigninRoute extends BaseRoute {
                 "scope": request.payload.scope
             };
             const sendBackToSignin = (error) => {
-                return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_url=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=${error}`);
+                return reply.redirect(`${viewData.redirect_url}?error=${error}&state=${viewData.state}`);
+                // return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_url=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=${error}`);
             };
             TokenService.getBearerToken(request.payload.username, request.payload.password, request.payload.client_id)
                 .then((token) => {
