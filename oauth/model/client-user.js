@@ -105,12 +105,12 @@ class ClientUser {
  * @returns {Promise} a userkey Promise
  */
 ClientUser.generateUserkey = function (clientId, username, password) {
-    if (!process.env.APP_HMAC_SECRET) {
+    if (!process.env.APPSETTING_APP_HMAC_SECRET) {
         throw new errors.ApplicationError('NO APP HMAC SECRET');
     }
     const promise = new Promise((resolve, reject) => {
         try {
-            const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+            const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
             const hash = hmac.update(`${username}${clientId}++++${password}`).digest('hex');
             resolve(hash);
         }

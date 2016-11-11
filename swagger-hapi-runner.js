@@ -82,7 +82,7 @@ class HapiRunner {
                             "isSecure": false,
                             "isHttpOnly": true,
                             "encoding": "none",
-                            "domain": process.env.APP_NET_DOMAIN
+                            "domain": process.env.APPSETTING_APP_NET_DOMAIN
                         }
                     }
                 };

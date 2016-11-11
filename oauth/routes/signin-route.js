@@ -57,7 +57,7 @@ class SigninRoute extends BaseRoute {
                 "isSecure": false,
                 "isHttpOnly": true,
                 "encoding": "none",
-                "domain": process.env.APP_NET_DOMAIN
+                "domain": process.env.APPSETTING_APP_NET_DOMAIN
             });
             reply.redirect("/");
         };
@@ -90,7 +90,7 @@ class SigninRoute extends BaseRoute {
                             "isSecure": false,
                             "isHttpOnly": true,
                             "encoding": "none",
-                            "domain": process.env.APP_NET_DOMAIN
+                            "domain": process.env.APPSETTING_APP_NET_DOMAIN
                         });
                         return reply.redirect(`/oauth/authorization?response_type=code&redirect_uri=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
                     }

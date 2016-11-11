@@ -29,9 +29,9 @@ class Logger {
                     {
                         "level": "info",
                         "stream": new BunyanAzure.AzureStream({
-                            "account": process.env.APP_AZURE_STORAGE_ACCOUNT_NAME,
-                            "access_key": process.env.APP_AZURE_STORAGE_ACCOUNT_KEY,
-                            "table": process.env.APP_AZURE_LOGGING_TABLE_NAME
+                            "account": process.env.APPSETTING_APP_AZURE_STORAGE_ACCOUNT_NAME,
+                            "access_key": process.env.APPSETTING_APP_AZURE_STORAGE_ACCOUNT_KEY,
+                            "table": process.env.APPSETTING_APP_AZURE_LOGGING_TABLE_NAME
                         })
                     }
                 ]

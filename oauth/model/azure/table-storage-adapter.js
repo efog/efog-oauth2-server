@@ -15,13 +15,13 @@ class TableStorageAdapter {
      * @memberOf TableStorageAdapter
      */
     constructor() {
-        const accountName = process.env.APP_AZURE_STORAGE_ACCOUNT_NAME;
-        const accountKey = process.env.APP_AZURE_STORAGE_ACCOUNT_KEY;
+        const accountName = process.env.APPSETTING_APP_AZURE_STORAGE_ACCOUNT_NAME;
+        const accountKey = process.env.APPSETTING_APP_AZURE_STORAGE_ACCOUNT_KEY;
         if (!accountName) {
-            throw new errors.ApplicationError(`APP_AZURE_STORAGE_ACCOUNT_NAME environment variable missing`);
+            throw new errors.ApplicationError(`APPSETTING_APP_AZURE_STORAGE_ACCOUNT_NAME environment variable missing`);
         }
         if (!accountKey) {
-            throw new errors.ApplicationError(`APP_AZURE_STORAGE_ACCOUNT_KEY environment variable missing`);
+            throw new errors.ApplicationError(`APPSETTING_APP_AZURE_STORAGE_ACCOUNT_KEY environment variable missing`);
         }
         this._tableService = Promise.promisifyAll(azure.createTableService(accountName, accountKey));
     }

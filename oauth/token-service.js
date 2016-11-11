@@ -8,8 +8,8 @@ const ul = require('../tools/urload');
 const njwt = require('njwt');
 const errors = require('../tools/errors');
 const StaticCache = require('../tools/static-cache').StaticCache;
-const privateKeyUrl = ul.urload(process.env.APP_JWT_PRIVATE_KEY_URL);
-const publicKeyUrl = ul.urload(process.env.APP_JWT_PUBLIC_KEY_URL);
+const privateKeyUrl = ul.urload(process.env.APPSETTING_APP_JWT_PRIVATE_KEY_URL);
+const publicKeyUrl = ul.urload(process.env.APPSETTING_APP_JWT_PUBLIC_KEY_URL);
 
 /**
  * Token helper server
@@ -28,7 +28,7 @@ class TokenService {
  */
 function getJwt(account) {
     const promise = new Promise((resolve, reject) => {
-        const issuer = process.env.APP_JWT_ISSUER;
+        const issuer = process.env.APPSETTING_APP_JWT_ISSUER;
         if (!issuer || !publicKeyUrl) {
             throw new errors.ApplicationError(messages.ENV_ERROR);
         }

@@ -230,7 +230,7 @@ exports.AccountSchema.statics.findByNameAndPassword = function (accountName, acc
  */
 exports.AccountSchema.methods.generateAccountSecret = function (password) {
     const promise = new Promise((resolve, reject) => {
-        const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+        const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
         const hash = hmac.update(`${this.accountName}$+++${password}+${this.accountOwner}`).digest('hex');
         resolve(hash);
     });
@@ -246,7 +246,7 @@ exports.AccountSchema.methods.generateAccountSecret = function (password) {
  */
 exports.AccountSchema.methods.generateApplicationSecret = function (applicationName) {
     const promise = new Promise((resolve, reject) => {
-        const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+        const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
         const hash = hmac.update(`${this.accountName}$+++${this.accountSecret}+${moment().format()}`).digest('hex');
         resolve(hash);
     });
@@ -261,7 +261,7 @@ exports.AccountSchema.methods.generateApplicationSecret = function (applicationN
  * @returns {string} application key
  */
 exports.AccountSchema.methods.generateApplicationKey = function (applicationName) {
-    const hmac = crypto.createHmac('sha256', process.env.APP_HMAC_SECRET);
+    const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
     const hash = hmac.update(`${this.accountName}${applicationName}¯\_(ツ)_/¯${moment().format()}`).digest('hex');
     return hash;
 };

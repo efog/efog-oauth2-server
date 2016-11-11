@@ -1,6 +1,6 @@
 const cookie = require('cookie');
 const crypto = require('crypto');
-const appHmac = process.env.APP_HMAC_SECRET;
+const appHmac = process.env.APPSETTING_APP_HMAC_SECRET;
 const guid = require('../../tools/guid').guid;
 const Promise = require('bluebird');
 const errors = require('../../tools/errors');

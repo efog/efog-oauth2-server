@@ -73,7 +73,7 @@ class AuthorizationController extends BaseController {
          * @memberOf AuthorizationController
          */
         this.codeFlow = (req, res, requestPayload) => {
-            const signinUrl = `${process.env.APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
+            const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
             return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
                 .then((client) => {
                     if (req.jwt) {

@@ -1,7 +1,7 @@
 const Database = require('../../oauth/model/mongo/mongo-database');
 const TokenService = require('../../oauth/token-service').TokenService;
 const Promise = require('bluebird');
-const publicKeyUrl = process.env.APP_JWT_PUBLIC_KEY_URL;
+const publicKeyUrl = process.env.APPSETTING_APP_JWT_PUBLIC_KEY_URL;
 const njwt = Promise.promisifyAll(require('njwt'));
 
 /**
