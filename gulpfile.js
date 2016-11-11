@@ -5,7 +5,7 @@ const gulp = require('gulp'),
 const mongoData = require("gulp-mongodb-data");
 
 gulp.task("db-init", () => {
-    const dbUrl = process.env.DBURL || 'mongodb://localhost:27017/efog-oauth2';
+    const dbUrl = process.env.APPSETTING_APP_MONGO_DB_URL || 'mongodb://localhost:27017/efog-oauth2';
 
     return gulp.src("deploy/data/*.json")
         .pipe(mongoData({

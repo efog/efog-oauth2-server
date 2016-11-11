@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const errors = require('../../../tools/errors');
 
-const dbURI = process.env.DBURL || "mongodb://127.0.0.1:27017/efog-oauth2";
+const dbURI = process.env.APPSETTING_APP_MONGO_DB_URL || "mongodb://127.0.0.1:27017/efog-oauth2";
 
 // Create the database connection 
 mongoose.connect(dbURI);
