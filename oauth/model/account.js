@@ -29,12 +29,12 @@ exports.AccountSchema = new mongoose.Schema({
         "type": [String]
     },
     "effectiveDate": {
-        "default": moment(),
+        "default": new Date(),
         "required": true,
         "type": Date
     },
     "terminationDate": {
-        "default": moment(),
+        "default": new Date(),
         "required": true,
         "type": Date
     },
@@ -77,12 +77,12 @@ exports.AccountSchema = new mongoose.Schema({
             "required": true
         },
         "effectiveDate": {
-            "default": moment(),
+            "default": new Date(),
             "required": true,
             "type": Date
         },
         "terminationDate": {
-            "default": moment(),
+            "default": new Date(),
             "required": true,
             "type": Date
         },
@@ -109,8 +109,10 @@ exports.AccountSchema.statics.create = (argv) => {
         account.accountName = argv.accountName;
         account.accountOwner = argv.accountOwner;
         account.accountManagers = [];
-        account.effectiveDate = moment();
-        account.terminationDate = moment("2099/01/01", "YYYY/MM/DD", true).endOf("year");
+        account.effectiveDate = new Date();
+        account.terminationDate = new Date(moment("2099/01/01", "YYYY/MM/DD", true)
+            .endOf("year")
+            .format());
         account.clients = [];
 
         return account.generateAccountSecret(argv.accountPassword).then((key) => {
@@ -132,9 +134,16 @@ exports.AccountSchema.statics.create = (argv) => {
  * @returns {Promise} an execution promise
  */
 exports.AccountSchema.statics.findByName = function (name) {
-    return this.findOne({
-        "accountName": name
-    });
+    const query = {
+        "accountName": "dev",
+        "terminationDate": {
+            "$gt": new Date()
+        },
+        "effectiveDate": {
+            "$lte": new Date()
+        }
+    };
+    return this.findOne(query);
 };
 
 /**
@@ -144,9 +153,16 @@ exports.AccountSchema.statics.findByName = function (name) {
  * @returns {Promise} an execution promise
  */
 exports.AccountSchema.statics.findByEmail = function (email) {
-    return this.findOne({
-        "accountOwner": email
-    });
+    const query = {
+        "accountOwner": email,
+        "terminationDate": {
+            "$gt": new Date()
+        },
+        "effectiveDate": {
+            "$lte": new Date()
+        }
+    };
+    return this.findOne(query);
 };
 
 /**
@@ -158,10 +174,23 @@ exports.AccountSchema.statics.findByEmail = function (email) {
  * @returns {Promise} an execution promise
  */
 exports.AccountSchema.statics.findByApplicationName = function (accountName, applicationName) {
-    return this.findOne({
+    const query = {
         "accountName": accountName,
-        "clients.applicationName": applicationName
-    });
+        "clients.applicationName": applicationName,
+        "terminationDate": {
+            "$gt": new Date()
+        },
+        "effectiveDate": {
+            "$lte": new Date()
+        },        
+        "clients.terminationDate": {
+            "$gt": new Date()
+        },
+        "clients.effectiveDate": {
+            "$lte": new Date()
+        }
+    };
+    return this.findOne(query);
 };
 
 /**
@@ -172,9 +201,22 @@ exports.AccountSchema.statics.findByApplicationName = function (accountName, app
  * @returns {Promise} an execution promise
  */
 exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
-    return this.findOne({
-        "clients.applicationKey": applicationKey
-    });
+    const query = {
+        "clients.applicationKey": applicationKey,
+        "terminationDate": {
+            "$gt": new Date()
+        },
+        "effectiveDate": {
+            "$lte": new Date()
+        },        
+        "clients.terminationDate": {
+            "$gt": new Date()
+        },
+        "clients.effectiveDate": {
+            "$lte": new Date()
+        }
+    };
+    return this.findOne(query);
 };
 
 /**
@@ -188,7 +230,19 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
 exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicationKey, applicationSecret) {
     return this.findOne({
         "clients.applicationKey": applicationKey,
-        "clients.applicationSecret": applicationSecret
+        "clients.applicationSecret": applicationSecret,
+        "terminationDate": {
+            "$gt": new Date()
+        },
+        "effectiveDate": {
+            "$lte": new Date()
+        },        
+        "clients.terminationDate": {
+            "$gt": new Date()
+        },
+        "clients.effectiveDate": {
+            "$lte": new Date()
+        }
     });
 };
 
@@ -247,7 +301,7 @@ exports.AccountSchema.methods.generateAccountSecret = function (password) {
 exports.AccountSchema.methods.generateApplicationSecret = function (applicationName) {
     const promise = new Promise((resolve, reject) => {
         const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
-        const hash = hmac.update(`${this.accountName}$+++${this.accountSecret}+${moment().format()}`).digest('hex');
+        const hash = hmac.update(`${this.accountName}$+++${this.accountSecret}+${new Date()}`).digest('hex');
         resolve(hash);
     });
 
@@ -262,7 +316,7 @@ exports.AccountSchema.methods.generateApplicationSecret = function (applicationN
  */
 exports.AccountSchema.methods.generateApplicationKey = function (applicationName) {
     const hmac = crypto.createHmac('sha256', process.env.APPSETTING_APP_HMAC_SECRET);
-    const hash = hmac.update(`${this.accountName}${applicationName}¯\_(ツ)_/¯${moment().format()}`).digest('hex');
+    const hash = hmac.update(`${this.accountName}${applicationName}¯\_(ツ)_/¯${new Date()}`).digest('hex');
     return hash;
 };
 
