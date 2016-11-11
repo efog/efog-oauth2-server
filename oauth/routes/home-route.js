@@ -33,7 +33,9 @@ class HomeRoute extends BaseRoute {
          * @returns {undefined}
          */
         this.get = (request, reply) => {
-            reply.view('home');
+            reply.view('home', {
+                "title": "Home"
+            });
         };
     }
 }
