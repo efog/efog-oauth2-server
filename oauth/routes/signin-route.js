@@ -76,7 +76,8 @@ class SigninRoute extends BaseRoute {
                 "redirect_url": request.payload.redirect_url,
                 "response_type": request.payload.response_type,
                 "state": request.payload.state,
-                "scope": request.payload.scope
+                "scope": request.payload.scope,
+                "title": "Sign in"
             };
             const sendBackToSignin = (error) => {
                 return reply.redirect(`${viewData.redirect_url}?error=${error}&state=${viewData.state}`);

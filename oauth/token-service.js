@@ -92,8 +92,7 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
             .then((token) => {
                 const accessToken = {
                     "access_token": token,
-                    "token_type": "Bearer",
-                    "expires_in": 24 * 60 * 60
+                    "token_type": "Bearer"
                 };
                 return resolve(accessToken);
             })
