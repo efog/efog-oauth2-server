@@ -31,6 +31,34 @@ class TokenEndpoint {
     }
 
     /**
+     * Handles client_credentials grant type
+     * 
+     * @param {any} grant grant definition
+     * @param {any} callback grant callback
+     * @returns {undefined}
+     * 
+     * @memberOf TokenEndpoint 
+     */
+    clientCredentials(grant, callback) {
+        return this.authenticateClientCredentials(grant)
+            .then((account) => {
+                if (!account) {
+                    throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
+                }
+                return TokenService.getJwt(account);
+            })
+            .then((token) => {
+                callback(null, {
+                    "access_token": token,
+                    "token_type": "Bearer"
+                });
+            })
+            .catch((error) => {
+                callback(error, null);
+            });
+    }
+
+    /**
      * Handles authorization code grant type
      * 
      * @param {any} grant grant parameters
@@ -63,7 +91,7 @@ class TokenEndpoint {
      * 
      * @memberOf TokenEndpoint
      */
-    authenticateClientCredentials(grant) {        
+    authenticateClientCredentials(grant) {
         const basicAuthRegex = new RegExp(/^Basic /g);
         const idPasswordRegex = new RegExp(/:/g);
         if (!basicAuthRegex.test(grant.authorization)) {

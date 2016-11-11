@@ -112,7 +112,7 @@ AuthorizationCode.PartitionKey = "authorizationcode";
 /**
  * Reads authorization code from storage
  * 
- * @param {string} code authorization code
+ * @param {string} grant authorization grant
  * 
  * @returns {Promise} execution promise
  */

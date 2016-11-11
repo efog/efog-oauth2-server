@@ -26,7 +26,7 @@ class TokenService {
  * @param {string} account account object
  * @returns {object} JWT object 
  */
-function getJwt(account) {
+TokenService.getJwt = (account) => {
     const promise = new Promise((resolve, reject) => {
         const issuer = process.env.APPSETTING_APP_JWT_ISSUER;
         if (!issuer || !publicKeyUrl) {
@@ -87,7 +87,7 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
                     throw new errors.ApplicationError(messages.NO_CLIENT);
                 }
                 targetAccount = account;
-                return getJwt(account);
+                return TokenService.getJwt(account);
             })
             .then((token) => {
                 const accessToken = {

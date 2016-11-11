@@ -228,7 +228,7 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
  * @returns {Promise} an execution promise
  */
 exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicationKey, applicationSecret) {
-    return this.findOne({
+    const query = {
         "clients.applicationKey": applicationKey,
         "clients.applicationSecret": applicationSecret,
         "terminationDate": {
@@ -243,7 +243,8 @@ exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicat
         "clients.effectiveDate": {
             "$lte": new Date()
         }
-    });
+    };
+    return this.findOne(query);
 };
 
 
