@@ -2,6 +2,7 @@ const AuthorizationService = require('../../oauth/authorization-service').Author
 const BaseController = require('./base-controller');
 const Promise = require('bluebird');
 const code = "code";
+const token = "token";
 const guid = require('../../tools/guid').guid;
 const errors = require('../../tools/errors');
 const messages = require('../../oauth/messages').Messages;
@@ -55,6 +56,17 @@ class AuthorizationController extends BaseController {
                                 return this.sendInternalServerError(req, res, error.message);
                             });
                     }
+                    if (requestPayload.response_type === token) {
+                        return this.codeFlow(req, res, requestPayload)
+                            .catch((error) => {
+                                if (error instanceof errors.ApplicationError) {
+                                    // const redirectUrl = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                                    // return this.sendRedirect(req, res, redirectUrl);
+                                    return this.sendBadRequest(req, res, error.message);
+                                }
+                                return this.sendInternalServerError(req, res, error.message);
+                            });
+                    }
                     return this.sendBadRequest(req, res, messages.INVALID_RESPONSE_TYPE);
                 })
                 .catch((error) => {
@@ -73,7 +85,7 @@ class AuthorizationController extends BaseController {
          * @memberOf AuthorizationController
          */
         this.codeFlow = (req, res, requestPayload) => {
-            const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_url=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
+            const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_uri=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
             return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
                 .then((client) => {
                     if (req.jwt) {
@@ -82,7 +94,7 @@ class AuthorizationController extends BaseController {
                                 if (account.hasApp(requestPayload.client_id)) {
                                     return this.authorizationService.getAuthorizationCode(req.token, client.redirectUrl, client.applicationKey)
                                         .then((authCode) => {
-                                            const redirectUrl = `${requestPayload.redirect_uri}?authorization_code=${authCode}&state=${requestPayload.state}`;
+                                            const redirectUrl = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
                                             return this.sendRedirect(req, res, redirectUrl);
                                         });
                                 }

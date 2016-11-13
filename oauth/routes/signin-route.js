@@ -35,7 +35,7 @@ class SigninRoute extends BaseRoute {
                 "signin_error": request.query.signin_error ? request.query.signin_error : null,
                 "crumb": request.plugins.crumb,
                 "client_id": request.query.client_id,
-                "redirect_url": request.query.redirect_url,
+                "redirect_uri": request.query.redirect_uri,
                 "response_type": request.query.response_type,
                 "state": request.query.state,
                 "scope": request.query.scope
@@ -73,15 +73,15 @@ class SigninRoute extends BaseRoute {
         this.post = (request, reply) => {
             const viewData = {
                 "client_id": request.payload.client_id,
-                "redirect_url": request.payload.redirect_url,
+                "redirect_uri": request.payload.redirect_uri,
                 "response_type": request.payload.response_type,
                 "state": request.payload.state,
                 "scope": request.payload.scope,
                 "title": "Sign in"
             };
             const sendBackToSignin = (error) => {
-                return reply.redirect(`${viewData.redirect_url}?error=${error}&state=${viewData.state}`);
-                // return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_url=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=${error}`);
+                return reply.redirect(`${viewData.redirect_uri}?error=${error}&state=${viewData.state}`);
+                // return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=${error}`);
             };
             TokenService.getBearerToken(request.payload.username, request.payload.password, request.payload.client_id)
                 .then((token) => {
@@ -93,7 +93,7 @@ class SigninRoute extends BaseRoute {
                             "encoding": "none",
                             "domain": process.env.APPSETTING_APP_NET_DOMAIN
                         });
-                        return reply.redirect(`/oauth/authorization?response_type=code&redirect_uri=${viewData.redirect_url}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
+                        return reply.redirect(`/oauth/authorization?response_type=code&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
                     }
                     // check if user has allowed client_id
                     // offer to add if not
