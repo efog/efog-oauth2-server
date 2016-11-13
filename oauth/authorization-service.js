@@ -83,7 +83,7 @@ class AuthorizationService {
         const code = new AuthorizationCode();
         code.code = guid();
         code.token = token;
-        code.expiry = moment().add(1, 'month');
+        code.expiry = moment().add(5, 'minutes');
         code.creationDate = moment();
         code.clientId = clientId;
         code.redirectUrl = redirectUrl;

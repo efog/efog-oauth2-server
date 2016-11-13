@@ -110,6 +110,25 @@ class AuthorizationCode {
 AuthorizationCode.PartitionKey = "authorizationcode";
 
 /**
+ * Deletes authorization code from storage
+ * 
+ * @param {string} code authorization code
+ * @returns {Promise} execution promise
+ */
+AuthorizationCode.delete = (code) => {
+    const tableService = new TableStorageAdapter();
+    const task = {
+        "PartitionKey": {
+            '_': AuthorizationCode.PartitionKey
+        },
+        "RowKey": {
+            '_': code
+        }
+    };
+    return tableService.service.deleteEntityAsync('authorizationcodes', task);
+};
+
+/**
  * Reads authorization code from storage
  * 
  * @param {string} grant authorization grant
