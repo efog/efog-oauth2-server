@@ -135,7 +135,7 @@ exports.AccountSchema.statics.create = (argv) => {
  */
 exports.AccountSchema.statics.findByName = function (name) {
     const query = {
-        "accountName": "dev",
+        "accountName": name,
         "terminationDate": {
             "$gt": new Date()
         },
