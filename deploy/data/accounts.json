@@ -1,7 +1,4 @@
 {
-    "_id": {
-        "$oid": "5829da195f99126801576ac3"
-    },
     "accountSecret": "2bc1afbe547854d0ac9f043a4b88b3fa72cd057f50296fa5a91e695ea8e4402f",
     "accountOwner": "ebrouillard@outlook.com",
     "accountName": "dev",
