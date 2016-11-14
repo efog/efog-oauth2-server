@@ -85,7 +85,7 @@ class SigninRoute extends BaseRoute {
             };
             TokenService.getBearerToken(request.payload.username, request.payload.password, request.payload.client_id)
                 .then((token) => {
-                    if (viewData.response_type === "code") {
+                    if (viewData.response_type === "code" || viewData.response_type === "token") {
                         reply.state("jwt_auth", token.access_token, {
                             "path": "/oauth/authorization",
                             "isSecure": false,
@@ -93,7 +93,7 @@ class SigninRoute extends BaseRoute {
                             "encoding": "none",
                             "domain": process.env.APPSETTING_APP_NET_DOMAIN
                         });
-                        return reply.redirect(`/oauth/authorization?response_type=code&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
+                        return reply.redirect(`/oauth/authorization?response_type=${viewData.response_type}&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}`);
                     }
                     // check if user has allowed client_id
                     // offer to add if not
