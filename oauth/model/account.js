@@ -442,7 +442,7 @@ exports.AccountSchema.methods.hasClient = function (clientId) {
  * @returns {boolean} has clientid
  */
 exports.AccountSchema.methods.hasApp = function (applicationKey) {
-    for (let idx = 0; idx < this.clients.length; idx++) {
+    for (let idx = 0; idx < this.apps.length; idx++) {
         if (this.apps[idx].applicationKey === applicationKey) {
             return true;
         }
