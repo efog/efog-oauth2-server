@@ -86,8 +86,8 @@ exports.AccountSchema = new mongoose.Schema({
             "required": true,
             "type": Date
         },
-        "redirectUrl": {
-            "type": String,
+        "redirectUri": {
+            "type": [String],
             "required": true
         },
         "scopes": {
@@ -182,7 +182,7 @@ exports.AccountSchema.statics.findByApplicationName = function (accountName, app
         },
         "effectiveDate": {
             "$lte": new Date()
-        },        
+        },
         "clients.terminationDate": {
             "$gt": new Date()
         },
@@ -197,10 +197,12 @@ exports.AccountSchema.statics.findByApplicationName = function (accountName, app
  * Finds account by application key
  * 
  * @param {string} applicationKey application name
+ * @param {string} redirectUri redirection uri
+ * @param {string} scope scope requested
  * 
  * @returns {Promise} an execution promise
  */
-exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
+exports.AccountSchema.statics.findByApplicationKey = function (applicationKey, redirectUri, scope) {
     const query = {
         "clients.applicationKey": applicationKey,
         "terminationDate": {
@@ -208,7 +210,7 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
         },
         "effectiveDate": {
             "$lte": new Date()
-        },        
+        },
         "clients.terminationDate": {
             "$gt": new Date()
         },
@@ -216,6 +218,9 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey) {
             "$lte": new Date()
         }
     };
+    if (redirectUri) {
+        query["clients.redirectUri"] = redirectUri;
+    }
     return this.findOne(query);
 };
 
@@ -236,7 +241,7 @@ exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicat
         },
         "effectiveDate": {
             "$lte": new Date()
-        },        
+        },
         "clients.terminationDate": {
             "$gt": new Date()
         },
@@ -356,11 +361,11 @@ exports.AccountSchema.methods.addApplication = function (applicationKey) {
  * 
  * @param {string} applicationName application name
  * @param {string} applicationDescription application description
- * @param {string} redirectUrl redirection url
+ * @param {string} redirectUri redirection url
  * 
  * @returns {Promise} an execution promise
  */
-exports.AccountSchema.methods.addClient = function (applicationName, applicationDescription, redirectUrl) {
+exports.AccountSchema.methods.addClient = function (applicationName, applicationDescription, redirectUri) {
     return this.generateApplicationSecret(applicationName)
         .then((secret) => {
             const app = {
@@ -368,13 +373,32 @@ exports.AccountSchema.methods.addClient = function (applicationName, application
                 "applicationSecret": secret,
                 "applicationDescription": applicationDescription,
                 "applicationKey": this.generateApplicationKey(applicationName),
-                "redirectUrl": redirectUrl,
+                "redirectUri": [redirectUri],
                 "terminationDate": moment("2099/01/01", "YYYY/MM/DD", true).endOf("year"),
                 "scopes": ["*"]
             };
             this.clients.push(app);
             return this.save();
         });
+};
+
+/**
+ * Add redirect URI to client
+ * 
+ * @param {string} applicationKey application key identifier
+ * @param {string} redirectUri redirection uri
+ * 
+ * @returns {Promise} execution promise
+ * 
+ */
+exports.AccountSchema.methods.addClientRedirect = function (applicationKey, redirectUri) {
+    for (let idx = 0; idx < this.clients.length; idx++) {
+        if (this.clients[idx].applicationKey === applicationKey) {
+            this.clients[idx].redirectUri.push(redirectUri);
+            break;
+        }
+    }
+    return this.save();
 };
 
 /**

@@ -26,7 +26,7 @@ class AuthorizationCode {
         this._creationDate = authCode ? moment(authCode.creationDate) : null;
         this._token = authCode ? authCode.token : null;
         this._clientId = authCode ? authCode.clientId : null;
-        this._redirectUrl = authCode ? authCode.redirectUrl : null;
+        this._redirectUri = authCode ? authCode.redirectUri : null;
         Object.defineProperties(this, {
             "code": {
                 "get": () => {
@@ -60,12 +60,12 @@ class AuthorizationCode {
                     this._token = value;
                 }
             },
-            "redirectUrl": {
+            "redirectUri": {
                 "get": () => {
-                    return this._redirectUrl;
+                    return this._redirectUri;
                 },
                 "set": (value) => {
-                    this._redirectUrl = value;
+                    this._redirectUri = value;
                 }
             },
             "clientId": {
@@ -94,7 +94,7 @@ class AuthorizationCode {
             "expiry": entGen.DateTime(this.expiry),
             "creationDate": entGen.DateTime(this.creationDate),
             "token": entGen.String(this.token),
-            "redirectUrl": entGen.String(this.redirectUrl),
+            "redirectUri": entGen.String(this.redirectUri),
             "clientId": entGen.String(this.clientId)
         };
         const tableService = new TableStorageAdapter();
@@ -108,6 +108,25 @@ class AuthorizationCode {
     }
 }
 AuthorizationCode.PartitionKey = "authorizationcode";
+
+/**
+ * Deletes authorization code from storage
+ * 
+ * @param {string} code authorization code
+ * @returns {Promise} execution promise
+ */
+AuthorizationCode.delete = (code) => {
+    const tableService = new TableStorageAdapter();
+    const task = {
+        "PartitionKey": {
+            '_': AuthorizationCode.PartitionKey
+        },
+        "RowKey": {
+            '_': code
+        }
+    };
+    return tableService.service.deleteEntityAsync('authorizationcodes', task);
+};
 
 /**
  * Reads authorization code from storage
@@ -126,7 +145,7 @@ AuthorizationCode.fromCode = (grant) => {
             const query = new azure.TableQuery()
                 .where(`RowKey eq ?`, grant.code)
                 .and(`PartitionKey eq ?`, AuthorizationCode.PartitionKey)
-                .and(`redirectUrl eq ?`, grant.redirect_uri)
+                .and(`redirectUri eq ?`, grant.redirect_uri)
                 .and(`clientId eq ?`, grant.client_id)
                 .and(azure.TableQuery.dateFilter('expiry', 'gt', new Date()));
             return tableService.service.queryEntitiesAsync('authorizationcodes', query, null);
@@ -140,7 +159,7 @@ AuthorizationCode.fromCode = (grant) => {
                     "creationDate": row.creationDate._,
                     "token": row.token._,
                     "clientId": row.clientId._,
-                    "redirectUrl": row.redirectUrl._
+                    "redirectUri": row.redirectUri._
                 };
                 const authorizationCode = new AuthorizationCode(authCode);
                 return authorizationCode;

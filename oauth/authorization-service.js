@@ -29,23 +29,18 @@ class AuthorizationService {
      * Checks if client id, redirect url and scope is valid
      * 
      * @param {any} clientId application identification
-     * @param {any} redirectUrl redirection url
+     * @param {any} redirectUri redirection url
      * @param {any} scope requested scope
      * @returns {Promise} an execution promise
      * 
      * @memberOf AuthorizationService
      */
-    clientAuthorizationRequestIsValid(clientId, redirectUrl, scope) {
+    clientAuthorizationRequestIsValid(clientId, redirectUri, scope) {
         const promise = new Promise((resolve, reject) => {
-            Account.findByApplicationKey(clientId)
+            Account.findByApplicationKey(clientId, redirectUri, scope)
                 .then((account) => {
                     if (account) {
-                        for (let idx = 0; idx < account.clients.length; idx++) {
-                            const client = account.clients[idx];
-                            if (client.redirectUrl === redirectUrl) {
-                                return resolve(client);
-                            }
-                        }
+                        return resolve(account);
                     }
                     return reject(new errors.ClientError(messages.NO_CLIENT));
                 })
@@ -72,21 +67,21 @@ class AuthorizationService {
      * Gets a stored authorization code for account and clientId
      * 
      * @param {string} token access token
-     * @param {string} redirectUrl redirection url
+     * @param {string} redirectUri redirection url
      * @param {string} clientId client identifier
      * 
      * @returns {Promise} execution promise
      * 
      * @memberOf AuthorizationService
      */
-    getAuthorizationCode(token, redirectUrl, clientId) {
+    getAuthorizationCode(token, redirectUri, clientId) {
         const code = new AuthorizationCode();
         code.code = guid();
         code.token = token;
-        code.expiry = moment().add(1, 'month');
+        code.expiry = moment().add(5, 'minutes');
         code.creationDate = moment();
         code.clientId = clientId;
-        code.redirectUrl = redirectUrl;
+        code.redirectUri = redirectUri;
         return code.save();
     }
 }

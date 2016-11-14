@@ -2,6 +2,7 @@ const exit = require('node-clean-exit');
 const moment = require("moment");
 const mongoose = require("mongoose");
 const Database = require("./../oauth/model/mongo/mongo-database");
+const changeCase = require("change-case");
 
 /**
  * Runs the cli
@@ -20,7 +21,7 @@ function run() {
         throw new Error('Target action not set, usage ex: cli client create');
     }
 
-    const command = require(`./commands/${resource}-commands`)[`${action}`];
+    const command = require(`./commands/${resource}-commands`)[`${changeCase.camelCase(action)}`];
     if (!command) {
         throw new Error('Command not found');
     }

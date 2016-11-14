@@ -46,7 +46,7 @@ TokenService.getJwt = (account) => {
             .catch(reject);
     });
     return promise;
-}
+};
 
 /**
  * Verifies the token against corresponding private key
@@ -107,13 +107,18 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
  * @returns {Promise} execution promise
  */
 TokenService.getBearerTokenFromCode = function (grant) {
+    let code = null;
     return AuthorizationCode.fromCode(grant)
         .then((authCode) => {
             if (!authCode) {
                 throw new errors.AuthorizationError(messages.INVALID_CODE);
             }
+            code = authCode;
+            return AuthorizationCode.delete(authCode.code);
+        })
+        .then(() => {
             return {
-                "access_token": authCode.token,
+                "access_token": code.token,
                 "token_type": "Bearer"
             };
         });
