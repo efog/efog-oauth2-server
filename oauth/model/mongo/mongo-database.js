@@ -29,6 +29,7 @@ mongoose.connection.on("error", function (err) {
 mongoose.connection.on("disconnected", function () {
     Logger.error("Mongoose default connection disconnected");
     setTimeout(() => {
+        mongoose.disconnect();
         mongoose.connect(dbURI);
     }, 1000);
 });
