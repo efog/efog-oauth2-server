@@ -49,8 +49,8 @@ class AuthorizationController extends BaseController {
                         return this.codeFlow(req, res, requestPayload)
                             .catch((error) => {
                                 if (error instanceof errors.ApplicationError) {
-                                    // const redirectUrl = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
-                                    // return this.sendRedirect(req, res, redirectUrl);
+                                    // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                                    // return this.sendRedirect(req, res, redirectUri);
                                     return this.sendBadRequest(req, res, error.message);
                                 }
                                 return this.sendInternalServerError(req, res, error.message);
@@ -60,8 +60,8 @@ class AuthorizationController extends BaseController {
                         return this.codeFlow(req, res, requestPayload)
                             .catch((error) => {
                                 if (error instanceof errors.ApplicationError) {
-                                    // const redirectUrl = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
-                                    // return this.sendRedirect(req, res, redirectUrl);
+                                    // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                                    // return this.sendRedirect(req, res, redirectUri);
                                     return this.sendBadRequest(req, res, error.message);
                                 }
                                 return this.sendInternalServerError(req, res, error.message);
@@ -87,15 +87,15 @@ class AuthorizationController extends BaseController {
         this.codeFlow = (req, res, requestPayload) => {
             const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_uri=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
             return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope)
-                .then((client) => {
+                .then((clientAccount) => {
                     if (req.jwt) {
                         return this.authorizationService.findAccount(req.jwt.body.sub)
                             .then((account) => {
                                 if (account.hasApp(requestPayload.client_id)) {
-                                    return this.authorizationService.getAuthorizationCode(req.token, client.redirectUrl, client.applicationKey)
+                                    return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
                                         .then((authCode) => {
-                                            const redirectUrl = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
-                                            return this.sendRedirect(req, res, redirectUrl);
+                                            const redirectUri = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
+                                            return this.sendRedirect(req, res, redirectUri);
                                         });
                                 }
                                 return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);

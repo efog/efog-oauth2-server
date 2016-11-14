@@ -1,54 +1,52 @@
-[
-    {
-        "accountName": "account123456",
-        "accountOwner": "etienne.brouillard@outlook.ca",
-        "accountManagers": [],
-        "effectiveDate": "2014-01-01T13:13:34.441Z",
-        "terminationDate": "2022-01-01T13:13:34.441Z",
-        "clients": [
-            {
-                "applicationSecret": "clientsecretabcdef",
-                "applicationName": "clientid123456",
-                "applicationDescription": "a description of the app's purpose",
-                "effectiveDate": "2014-01-01T13:13:34.441Z",
-                "terminationDate": "2022-01-01T13:13:34.441Z",
-                "scopes": [
-                    "/"
-                ]
-            },
-            {
-                "applicationSecret": "clientsecretabcdef",
-                "applicationName": "clientid098765",
-                "applicationDescription": "a description of the app's purpose",
-                "effectiveDate": "2014-01-01T13:13:34.441Z",
-                "terminationDate": "2022-01-01T13:13:34.441Z",
-                "scopes": [
-                    "/"
-                ]
-            }
-        ]
+{
+    "_id": {
+        "$oid": "5829da195f99126801576ac3"
     },
-    {
-        "accountSecret": "2bc1afbe547854d0ac9f043a4b88b3fa72cd057f50296fa5a91e695ea8e4402f",
-        "accountOwner": "ebrouillard@outlook.com",
-        "accountName": "dev",
-        "clients": [
-            {
-                "applicationName": "devapp",
-                "applicationSecret": "e1bee9d2c8fd91943524a2a736cbacfbc20cd38930342cf469ef8a815118e9a9",
-                "applicationDescription": "devapplication",
-                "redirectUrl": "http://localhost:2406",
-                "_id": "58177c6517a61c414ccac377",
-                "scopes": [
-                    "*"
-                ],
-                "terminationDate": "2100-01-01T04:59:59.999Z",
-                "effectiveDate": "2016-10-31T17:16:02.294Z",
-                "applicationKey": "ee5b0026d1edc18a2c7fa045b45d678cf200fcee17293845fcf3fcb87455494d"
-            }
-        ],
-        "terminationDate": "2100-01-01T04:59:59.999Z",
-        "effectiveDate": "2016-10-31T17:15:55.580Z",
-        "accountManagers": []
-    }
-]
+    "accountSecret": "2bc1afbe547854d0ac9f043a4b88b3fa72cd057f50296fa5a91e695ea8e4402f",
+    "accountOwner": "ebrouillard@outlook.com",
+    "accountName": "dev",
+    "clients": [
+        {
+            "applicationName": "dev",
+            "applicationSecret": "6257de3a40ab47ebab51f241a8d4f3e63a2de092d0438aa35acca1b16c83d93e",
+            "applicationDescription": "dev",
+            "_id": {
+                "$oid": "5829da5f450e3e6814f36ba6"
+            },
+            "scopes": [
+                "*"
+            ],
+            "redirectUri": [
+                "http://localhosr:2406",
+                "https://www.getpostman.com/oauth2/callback"
+            ],
+            "terminationDate": {
+                "$date": "2100-01-01T04:59:59.999Z"
+            },
+            "effectiveDate": {
+                "$date": "2016-11-14T15:37:05.621Z"
+            },
+            "applicationKey": "27d9ce8db767b8610ed4caa99531c686e19f6dc303303573dad9ab07300e6a38"
+        }
+    ],
+    "apps": [
+        {
+            "applicationKey": "27d9ce8db767b8610ed4caa99531c686e19f6dc303303573dad9ab07300e6a38",
+            "_id": {
+                "$oid": "5829db11e4be0f686c69cd0c"
+            },
+            "scopes": [
+                "account.READ"
+            ],
+            "enabled": true
+        }
+    ],
+    "terminationDate": {
+        "$date": "2100-01-01T04:59:59.000Z"
+    },
+    "effectiveDate": {
+        "$date": "2016-11-14T15:36:57.064Z"
+    },
+    "accountManagers": [],
+    "__v": 3
+}
