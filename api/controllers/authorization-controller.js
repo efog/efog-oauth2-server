@@ -124,7 +124,7 @@ class AuthorizationController extends BaseController {
                         return this.authorizationService.findAccount(req.jwt.body.sub)
                             .then((account) => {
                                 if (account.hasApp(requestPayload.client_id)) {
-                                    return this.authorizationService.getAugethorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
+                                    return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
                                         .then((authCode) => {
                                             const redirectUri = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
                                             return this.sendRedirect(req, res, redirectUri);
