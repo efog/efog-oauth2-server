@@ -46,29 +46,24 @@ class AuthorizationController extends BaseController {
                         "redirect_uri": req.swagger.params.redirect_uri ? req.swagger.params.redirect_uri.value : null,
                         "scope": req.swagger.params.scope ? req.swagger.params.scope.value : null
                     };
-                    if (requestPayload.response_type === code) {
-                        return this.codeFlow(req, res, requestPayload)
-                            .catch((error) => {
-                                if (error instanceof errors.ApplicationError) {
-                                    // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
-                                    // return this.sendRedirect(req, res, redirectUri);
-                                    return this.sendBadRequest(req, res, error.message);
-                                }
-                                return this.sendInternalServerError(req, res, error.message);
-                            });
-                    }
-                    if (requestPayload.response_type === token) {
-                        return this.implicitFlow(req, res, requestPayload)
-                            .catch((error) => {
-                                if (error instanceof errors.ApplicationError) {
-                                    // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
-                                    // return this.sendRedirect(req, res, redirectUri);
-                                    return this.sendBadRequest(req, res, error.message);
-                                }
-                                return this.sendInternalServerError(req, res, error.message);
-                            });
-                    }
-                    return this.sendBadRequest(req, res, messages.INVALID_RESPONSE_TYPE);
+                    return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope, requestPayload.response_type)
+                        .then((clientAccount) => {
+                            if (requestPayload.response_type === code) {
+                                return this.codeFlow(req, res, requestPayload);
+                            }
+                            if (requestPayload.response_type === token) {
+                                return this.implicitFlow(req, res, requestPayload);
+                            }
+                            return this.sendBadRequest(req, res, messages.INVALID_RESPONSE_TYPE);
+                        })
+                        .catch((error) => {
+                            if (error instanceof errors.ApplicationError) {
+                                // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                                // return this.sendRedirect(req, res, redirectUri);
+                                return this.sendBadRequest(req, res, error.message);
+                            }
+                            return this.sendInternalServerError(req, res, error.message);
+                        });
                 })
                 .catch((error) => {
                     return this.sendBadRequest(req, res, error.message);
@@ -87,23 +82,20 @@ class AuthorizationController extends BaseController {
          */
         this.implicitFlow = (req, res, requestPayload) => {
             const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_uri=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
-            return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope, requestPayload.response_type)
-                .then((clientAccount) => {
-                    if (req.jwt) {
-                        return this.authorizationService.findAccount(req.jwt.body.sub)
-                            .then((account) => {
-                                if (account.hasApp(requestPayload.client_id)) {
-                                    return TokenService.getJwt(account)
-                                        .then((bearerToken) => {
-                                            const redirectUri = `${requestPayload.redirect_uri}?access_token=${bearerToken}&state=${requestPayload.state}`;
-                                            return this.sendRedirect(req, res, redirectUri);
-                                        });
-                                }
-                                return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
-                            });
-                    }
-                    return this.sendRedirect(req, res, signinUrl);
-                });
+            if (req.jwt) {
+                return this.authorizationService.findAccount(req.jwt.body.sub)
+                    .then((account) => {
+                        if (account.hasApp(requestPayload.client_id)) {
+                            return TokenService.getJwt(account)
+                                .then((bearerToken) => {
+                                    const redirectUri = `${requestPayload.redirect_uri}?access_token=${bearerToken}&state=${requestPayload.state}`;
+                                    return this.sendRedirect(req, res, redirectUri);
+                                });
+                        }
+                        return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
+                    });
+            }
+            return this.sendRedirect(req, res, signinUrl);
         };
 
         /**
@@ -118,23 +110,20 @@ class AuthorizationController extends BaseController {
          */
         this.codeFlow = (req, res, requestPayload) => {
             const signinUrl = `${process.env.APPSETTING_APP_SIGN_IN_URL}?response_type=${requestPayload.response_type}&redirect_uri=${requestPayload.redirect_uri}&client_id=${requestPayload.client_id}&scope=${requestPayload.scope}&state=${requestPayload.state}`;
-            return this.authorizationService.clientAuthorizationRequestIsValid(requestPayload.client_id, requestPayload.redirect_uri, requestPayload.scope, requestPayload.response_type)
-                .then((clientAccount) => {
-                    if (req.jwt) {
-                        return this.authorizationService.findAccount(req.jwt.body.sub)
-                            .then((account) => {
-                                if (account.hasApp(requestPayload.client_id)) {
-                                    return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
-                                        .then((authCode) => {
-                                            const redirectUri = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
-                                            return this.sendRedirect(req, res, redirectUri);
-                                        });
-                                }
-                                return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
-                            });
-                    }
-                    return this.sendRedirect(req, res, signinUrl);
-                });
+            if (req.jwt) {
+                return this.authorizationService.findAccount(req.jwt.body.sub)
+                    .then((account) => {
+                        if (account.hasApp(requestPayload.client_id)) {
+                            return this.authorizationService.getAuthorizationCode(req.token, requestPayload.redirect_uri, requestPayload.client_id)
+                                .then((authCode) => {
+                                    const redirectUri = `${requestPayload.redirect_uri}?code=${authCode}&state=${requestPayload.state}`;
+                                    return this.sendRedirect(req, res, redirectUri);
+                                });
+                        }
+                        return this.sendRedirect(req, res, `${signinUrl}&signin_error=${messages.NO_CLIENT}`);
+                    });
+            }
+            return this.sendRedirect(req, res, signinUrl);
         };
     }
 }
