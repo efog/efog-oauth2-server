@@ -55,17 +55,14 @@ class AuthorizationController extends BaseController {
                                 return this.implicitFlow(req, res, requestPayload);
                             }
                             return this.sendBadRequest(req, res, messages.INVALID_RESPONSE_TYPE);
-                        })
-                        .catch((error) => {
-                            if (error instanceof errors.ApplicationError) {
-                                // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
-                                // return this.sendRedirect(req, res, redirectUri);
-                                return this.sendBadRequest(req, res, error.message);
-                            }
-                            return this.sendInternalServerError(req, res, error.message);
                         });
                 })
                 .catch((error) => {
+                    if (error instanceof errors.AuthorizationError || error instanceof errors.ClientError) {
+                        // const redirectUri = `${requestPayload.redirect_uri}?error=${error.message}&state=${requestPayload.state}`;
+                        // return this.sendRedirect(req, res, redirectUri);
+                        return this.sendUnauthorized(req, res, error.message);
+                    }
                     return this.sendBadRequest(req, res, error.message);
                 });
         };
