@@ -1,3 +1,5 @@
+const atob = require('atob');
+const btoa = require('btoa');
 const messages = require('./messages').Messages;
 const Account = require('./model/account').Account;
 const AuthorizationCode = require('./model/authorization-code').AuthorizationCode;
@@ -19,6 +21,28 @@ const publicKeyUrl = ul.urload(process.env.APPSETTING_APP_JWT_PUBLIC_KEY_URL);
 class TokenService {
 
 }
+
+
+/**
+ * Authenticates application credentials
+ * 
+ * @param {any} grant grant request details
+ * @returns {Promise} execution promise
+ * 
+ * @memberOf TokenEndpoint
+ */
+TokenService.authenticateClientCredentials = (grant) => {
+    const basicAuthRegex = new RegExp(/^Basic /g);
+    const idPasswordRegex = new RegExp(/:/g);
+    if (!basicAuthRegex.test(grant.authorization)) {
+        throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
+    }
+    const basicAuth = atob(grant.authorization.split(' ')[1]);
+    if (!idPasswordRegex.test(basicAuth)) {
+        throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
+    }
+    return Account.findByApplicationKeyAndSecret(basicAuth.split(':')[0], basicAuth.split(':')[1]);
+};
 
 /**
  * Gets JWT for account
@@ -54,7 +78,7 @@ TokenService.getJwt = (account) => {
  * @param {string} token compact token to verify
  * @returns {object} unpacked token
  */
-TokenService.verifyJwt = function (token) {
+TokenService.verifyJwt = function(token) {
     const promise = new Promise((resolve, reject) => {
         TokenService.getPublicKey()
             .then((publicKey) => {
@@ -74,30 +98,29 @@ TokenService.verifyJwt = function (token) {
  * @param {string} accountPassword account password
  * @param {string} clientId target client id
  * @returns {Promise} execution promise
+ * 
+ * @memberOf TokenService
  */
-TokenService.getBearerToken = function (accountName, accountPassword, clientId) {
-    return new Promise((resolve, reject) => {
-        let targetAccount = null;
-        return Account.findByNameAndPassword(accountName, accountPassword)
-            .then((account) => {
-                if (!account) {
-                    throw new errors.ApplicationError(messages.NO_ACCOUNT);
-                }
-                if (clientId && !account.hasApp(clientId)) {
-                    throw new errors.ApplicationError(messages.NO_CLIENT);
-                }
-                targetAccount = account;
-                return TokenService.getJwt(account);
-            })
-            .then((token) => {
-                const accessToken = {
-                    "access_token": token,
-                    "token_type": "Bearer"
-                };
-                return resolve(accessToken);
-            })
-            .catch(reject);
-    });
+TokenService.getBearerToken = function(accountName, accountPassword, clientId) {
+    let targetAccount = null;
+    return Account.findByNameAndPassword(accountName, accountPassword)
+        .then((account) => {
+            if (!account) {
+                throw new errors.ApplicationError(messages.NO_ACCOUNT);
+            }
+            if (clientId && !account.hasApp(clientId)) {
+                throw new errors.ApplicationError(messages.NO_CLIENT);
+            }
+            targetAccount = account;
+            return TokenService.getJwt(account);
+        })
+        .then((token) => {
+            const accessToken = {
+                "access_token": token,
+                "token_type": "Bearer"
+            };
+            return accessToken;
+        });
 };
 
 /**
@@ -106,7 +129,7 @@ TokenService.getBearerToken = function (accountName, accountPassword, clientId) 
  * @param {object} grant grant request object
  * @returns {Promise} execution promise
  */
-TokenService.getBearerTokenFromCode = function (grant) {
+TokenService.getBearerTokenFromCode = function(grant) {
     let code = null;
     return AuthorizationCode.fromCode(grant)
         .then((authCode) => {
@@ -129,7 +152,7 @@ TokenService.getBearerTokenFromCode = function (grant) {
  * 
  * @returns {string} private key
  */
-TokenService.getPrivateKey = function () {
+TokenService.getPrivateKey = function() {
     const action = () => {
         return getter.get(privateKeyUrl);
     };
@@ -145,7 +168,7 @@ TokenService.getPrivateKey = function () {
  * 
  * @returns {string} public key
  */
-TokenService.getPublicKey = function () {
+TokenService.getPublicKey = function() {
     const action = () => {
         return getter.get(publicKeyUrl);
     };

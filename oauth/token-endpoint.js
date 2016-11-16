@@ -1,5 +1,3 @@
-const atob = require('atob');
-const btoa = require('btoa');
 const errors = require('../tools/errors');
 const messages = require('./messages').Messages;
 const Account = require('./model/account').Account;
@@ -40,7 +38,7 @@ class TokenEndpoint {
      * @memberOf TokenEndpoint 
      */
     clientCredentials(grant, callback) {
-        return this.authenticateClientCredentials(grant)
+        return TokenService.authenticateClientCredentials(grant)
             .then((account) => {
                 if (!account) {
                     throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
@@ -68,7 +66,7 @@ class TokenEndpoint {
      * @memberOf TokenEndpoint
      */
     authorizationCode(grant, callback) {
-        return this.authenticateClientCredentials(grant)
+        return TokenService.authenticateClientCredentials(grant)
             .then((authorized) => {
                 if (!authorized) {
                     throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
@@ -81,27 +79,6 @@ class TokenEndpoint {
             .catch((error) => {
                 callback(error, null);
             });
-    }
-
-    /**
-     * Authenticates application credentials
-     * 
-     * @param {any} grant grant request details
-     * @returns {Promise} execution promise
-     * 
-     * @memberOf TokenEndpoint
-     */
-    authenticateClientCredentials(grant) {
-        const basicAuthRegex = new RegExp(/^Basic /g);
-        const idPasswordRegex = new RegExp(/:/g);
-        if (!basicAuthRegex.test(grant.authorization)) {
-            throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
-        }
-        const basicAuth = atob(grant.authorization.split(' ')[1]);
-        if (!idPasswordRegex.test(basicAuth)) {
-            throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
-        }
-        return Account.findByApplicationKeyAndSecret(basicAuth.split(':')[0], basicAuth.split(':')[1]);
     }
 }
 exports.TokenEndpoint = TokenEndpoint;

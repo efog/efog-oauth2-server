@@ -263,23 +263,20 @@ exports.AccountSchema.statics.findByApplicationKeyAndSecret = function (applicat
  */
 exports.AccountSchema.statics.findByNameAndPassword = function (accountName, accountPassword) {
     let targetAccount = null;
-    const promise = new Promise((resolve, reject) => {
-        exports.Account.findByName(accountName)
-            .then((account) => {
-                targetAccount = account;
-                if (targetAccount) {
-                    return account.validateOwnership(accountPassword);
-                }
-                return reject(new errors.AuthorizationError(messages.NO_ACCOUNT));
-            })
-            .then((isowner) => {
-                if (isowner) {
-                    return resolve(targetAccount);
-                }
-                return reject(new errors.AuthorizationError(messages.INVALID_CREDENTIALS));
-            });
-    });
-    return promise;
+    return exports.Account.findByName(accountName)
+        .then((account) => {
+            targetAccount = account;
+            if (targetAccount) {
+                return account.validateOwnership(accountPassword);
+            }
+            throw new errors.AuthorizationError(messages.NO_ACCOUNT);
+        })
+        .then((isowner) => {
+            if (isowner) {
+                return targetAccount;
+            }
+            throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
+        });
 };
 
 /**
