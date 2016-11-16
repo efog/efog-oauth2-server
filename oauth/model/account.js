@@ -5,6 +5,17 @@ const guid = require("../../tools/guid").guid;
 const messages = require('../messages').Messages;
 const errors = require('../../tools/errors');
 
+const validFlows = {
+    "code": true,
+    "token": true
+};
+
+const validGrants = {
+    "authorization_code": true,
+    "client_credentials": true,
+    "password": true
+};
+
 /**
  * Define account document schema
  */
@@ -92,6 +103,18 @@ exports.AccountSchema = new mongoose.Schema({
         },
         "scopes": {
             "type": [String]
+        },
+        "policies": {
+            "grants": {
+                "type": [String],
+                "default": ["authorization_code", "client_credentials"],
+                "required": false
+            },
+            "flows": {
+                "type": [String],
+                "default": ["code"],
+                "required": false
+            }
         }
     }]
 });
@@ -199,10 +222,11 @@ exports.AccountSchema.statics.findByApplicationName = function (accountName, app
  * @param {string} applicationKey application name
  * @param {string} redirectUri redirection uri
  * @param {string} scope scope requested
+ * @param {string} flow flow requested
  * 
  * @returns {Promise} an execution promise
  */
-exports.AccountSchema.statics.findByApplicationKey = function (applicationKey, redirectUri, scope) {
+exports.AccountSchema.statics.findByApplicationKey = function (applicationKey, redirectUri, scope, flow) {
     const query = {
         "clients.applicationKey": applicationKey,
         "terminationDate": {
@@ -220,6 +244,9 @@ exports.AccountSchema.statics.findByApplicationKey = function (applicationKey, r
     };
     if (redirectUri) {
         query["clients.redirectUri"] = redirectUri;
+    }
+    if (flow) {
+        query["clients.policies.flows"] = flow;
     }
     return this.findOne(query);
 };
@@ -418,18 +445,158 @@ exports.AccountSchema.methods.validateOwnership = function (password) {
 };
 
 /**
- * Account has client id
+ * Returns the client with id
  * 
- * @param {string} clientId client identification
- * @returns {boolean} has clientid
+ * @param {string} clientId client identifier
+ * @returns {client} client
+ * 
+ * @memberOf Account
  */
-exports.AccountSchema.methods.hasClient = function (clientId) {
+exports.AccountSchema.methods.getClient = function (clientId) {
     for (let idx = 0; idx < this.clients.length; idx++) {
         if (this.clients[idx].applicationKey === clientId) {
-            return true;
+            return this.clients[idx];
         }
     }
-    return false;
+    return null;
+};
+
+/**
+ * Checks if client has grant.
+ * 
+ * @param {string} client target application
+ * @param {string} grant grant name
+ * 
+ * @returns {Boolean} has grant
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.clientHasGrant = function (client, grant) {
+    if (client.policies && client.policies.grants) {
+        for (let idx = 0; idx < client.policies.grants.length; idx++) {
+            if (client.policies.grants[idx] === grant) {
+                return idx;
+            }
+        }
+    }
+    return -1;
+};
+
+/**
+ * Checks if client has flow.
+ * 
+ * @param {object} client target application
+ * @param {string} flow flow name
+ * 
+ * @returns {Boolean} has flow
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.clientHasFlow = function (client, flow) {
+    if (client.policies && client.policies.flows) {
+        for (let idx = 0; idx < client.policies.flows.length; idx++) {
+            if (client.policies.flows[idx] === flow) {
+                return idx;
+            }
+        }
+    }
+    return -1;
+};
+
+/**
+ * Adds grant type to client policies
+ * 
+ * @param {string} clientId target application
+ * @param {string} grantType grant type
+ * 
+ * @returns {Promise} execution promise
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.addGrant = function (clientId, grantType) {
+    const client = this.getClient(clientId);
+    if (validGrants[grantType] && client) {
+        client.policies = client.policies ? client.policies : {};
+        const policies = client.policies;
+        if (policies.grants && this.clientHasGrant(client, grantType) < 0) {
+            policies.grants.push(grantType);
+        }
+        else if (!policies.grants) {
+            policies.grants = [grantType];
+        }
+    }
+    return this.save();
+};
+
+/**
+ * Removes grant from account client policies.
+ * 
+ * @param {string} clientId target application
+ * @param {string} grant grant name
+ * 
+ * @returns {Promise} execution promise
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.removeGrant = function (clientId, grant) {
+    const client = this.getClient(clientId);
+    if (validGrants[grant] && client) {
+        client.policies = client.policies ? client.policies : {};
+        const policies = client.policies;
+        const grantIdx = this.clientHasGrant(client, grant);
+        if (policies.grants && grantIdx !== -1) {
+            policies.grants.splice(grantIdx, 1);
+        }
+    }
+    return this.save();
+};
+
+/**
+ * Adds flow to account client policies.
+ * 
+ * @param {string} clientId target application
+ * @param {string} flow flow name
+ * 
+ * @returns {Promise} execution promise
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.addFlow = function (clientId, flow) {
+    const client = this.getClient(clientId);
+    if (validFlows[flow] && client) {
+        client.policies = client.policies ? client.policies : {};
+        const policies = client.policies;
+        if (policies.flows && this.clientHasFlow(client, flow) < 0) {
+            policies.flows.push(flow);
+        }
+        else if (!policies.flows) {
+            policies.flows = [flow];
+        }
+    }
+    return this.save();
+};
+
+/**
+ * Removes flow from account client policies.
+ * 
+ * @param {string} clientId target application
+ * @param {string} flow flow name
+ * 
+ * @returns {Promise} execution promise
+ * 
+ * @memberOf Account
+ */
+exports.AccountSchema.methods.removeFlow = function (clientId, flow) {
+    const client = this.getClient(clientId);
+    if (validFlows[flow] && client) {
+        client.policies = client.policies ? client.policies : {};
+        const policies = client.policies;
+        const flowIdx = this.clientHasFlow(client, flow);
+        if (policies.flows && flowIdx !== -1) {
+            policies.flows.splice(flowIdx, 1);
+        }
+    }
+    return this.save();
 };
 
 /**
@@ -441,7 +608,7 @@ exports.AccountSchema.methods.hasClient = function (clientId) {
 exports.AccountSchema.methods.hasApp = function (applicationKey) {
     for (let idx = 0; idx < this.apps.length; idx++) {
         if (this.apps[idx].applicationKey === applicationKey) {
-            return true;
+            return true && this.apps[idx].enabled;
         }
     }
     return false;

@@ -32,7 +32,7 @@ class SigninRoute extends BaseRoute {
          */
         this.get = (request, reply) => {
             const viewData = {
-                "signin_error": request.query.signin_error ? request.query.signin_error : null,
+                "error": request.query.error ? request.query.error : null,
                 "crumb": request.plugins.crumb,
                 "client_id": request.query.client_id,
                 "redirect_uri": request.query.redirect_uri,
@@ -81,7 +81,7 @@ class SigninRoute extends BaseRoute {
             };
             const sendBackToSignin = (error) => {
                 return reply.redirect(`${viewData.redirect_uri}?error=${error}&scope=${viewData.scope}&state=${viewData.state}`);
-                // return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&signin_error=${error}`);
+                // return reply.redirect(`signin?response_type=${viewData.response_type}&redirect_uri=${viewData.redirect_uri}&client_id=${viewData.client_id}&scope=${viewData.scope}&state=${viewData.state}&error=${error}`);
             };
             TokenService.getBearerToken(request.payload.username, request.payload.password, request.payload.client_id)
                 .then((token) => {

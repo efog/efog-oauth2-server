@@ -28,16 +28,17 @@ class AuthorizationService {
     /**
      * Checks if client id, redirect url and scope is valid
      * 
-     * @param {any} clientId application identification
-     * @param {any} redirectUri redirection url
-     * @param {any} scope requested scope
+     * @param {string} clientId application identification
+     * @param {string} redirectUri redirection url
+     * @param {string} scope requested scope
+     * @param {string} responseType requested response type
      * @returns {Promise} an execution promise
      * 
      * @memberOf AuthorizationService
      */
-    clientAuthorizationRequestIsValid(clientId, redirectUri, scope) {
+    clientAuthorizationRequestIsValid(clientId, redirectUri, scope, responseType) {
         const promise = new Promise((resolve, reject) => {
-            Account.findByApplicationKey(clientId, redirectUri, scope)
+            Account.findByApplicationKey(clientId, redirectUri, scope, responseType)
                 .then((account) => {
                     if (account) {
                         return resolve(account);
