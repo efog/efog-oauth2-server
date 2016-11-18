@@ -49,6 +49,34 @@ exports.AccountSchema = new mongoose.Schema({
         "required": true,
         "type": Date
     },
+    "activity": {
+        "lastSuccessfulAuthentication": {
+            "type": Date
+        },
+        "lastFailedAuthentication": {
+            "type": Date
+        },
+        "events": [
+            {
+                "timestamp": {
+                    "type": Date,
+                    "default": moment()
+                },
+                "origin": {
+                    "type": String
+                },
+                "clientId": {
+                    "type": String
+                },
+                "grantType": {
+                    "type": String
+                },
+                "success": {
+                    "type": Boolean
+                }
+            }
+        ]
+    },
     "apps": [
         {
             "applicationKey": {

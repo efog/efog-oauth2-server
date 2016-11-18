@@ -3,6 +3,7 @@ const moment = require('moment');
 const azure = require('azure-storage');
 const errors = require('../../tools/errors');
 const messages = require('../messages').Messages;
+const btoa = require('btoa');
 
 /**
  * Grant Audit trace entity
@@ -31,6 +32,22 @@ class GrantAuditTrace {
                         this._queueService = Promise.promisifyAll(azure.createQueueService(this._accountName, this._accountKey));
                     }
                     return this._queueService;
+                }
+            },
+            "originAddress": {
+                "get": () => {
+                    return this._properties.originAddress ? this._properties.originAddress : "";
+                },
+                "set": (value) => {
+                    this._properties.originAddress = value;
+                }
+            },
+            "timestamp": {
+                "get": () => {
+                    return this._properties.timestamp ? this._properties.timestamp : moment();
+                },
+                "set": (value) => {
+                    this._properties.timestamp = value;
                 }
             },
             "username": {
@@ -101,7 +118,8 @@ class GrantAuditTrace {
         this.save = () => {
             return this.queueService.createQueueIfNotExistsAsync(GrantAuditTrace.QueueName).
                 then(() => {
-                    return this.queueService.createMessageAsync(GrantAuditTrace.QueueName, JSON.stringify(this._properties));
+                    const message = btoa(JSON.stringify(this._properties));
+                    return this.queueService.createMessageAsync(GrantAuditTrace.QueueName, message);
                 });
         };
     }

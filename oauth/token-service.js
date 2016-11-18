@@ -32,16 +32,31 @@ class TokenService {
  * @memberOf TokenEndpoint
  */
 TokenService.authenticateClientCredentials = (grant) => {
+    const authInfo = TokenService.getBasicAuthInfo(grant.authorization);
+    return Account.findByApplicationKeyAndSecret(authInfo.name, authInfo.password);
+};
+
+/**
+ * Gets basic auth name and password components
+ * 
+ * @param {any} authorization basic authorization value
+ * 
+ * @returns {any} basic authorization components
+ */
+TokenService.getBasicAuthInfo = (authorization) => {
     const basicAuthRegex = new RegExp(/^Basic /g);
     const idPasswordRegex = new RegExp(/:/g);
-    if (!basicAuthRegex.test(grant.authorization)) {
+    if (!basicAuthRegex.test(authorization)) {
         throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
     }
-    const basicAuth = atob(grant.authorization.split(' ')[1]);
+    const basicAuth = atob(authorization.split(' ')[1]);
     if (!idPasswordRegex.test(basicAuth)) {
         throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
     }
-    return Account.findByApplicationKeyAndSecret(basicAuth.split(':')[0], basicAuth.split(':')[1]);
+    return {
+        "name": basicAuth.split(':')[0],
+        "password": basicAuth.split(':')[1]
+    };
 };
 
 /**
@@ -78,7 +93,7 @@ TokenService.getJwt = (account) => {
  * @param {string} token compact token to verify
  * @returns {object} unpacked token
  */
-TokenService.verifyJwt = function(token) {
+TokenService.verifyJwt = function (token) {
     const promise = new Promise((resolve, reject) => {
         TokenService.getPublicKey()
             .then((publicKey) => {
@@ -101,7 +116,7 @@ TokenService.verifyJwt = function(token) {
  * 
  * @memberOf TokenService
  */
-TokenService.getBearerToken = function(accountName, accountPassword, clientId) {
+TokenService.getBearerToken = function (accountName, accountPassword, clientId) {
     let targetAccount = null;
     return Account.findByNameAndPassword(accountName, accountPassword)
         .then((account) => {
@@ -129,7 +144,7 @@ TokenService.getBearerToken = function(accountName, accountPassword, clientId) {
  * @param {object} grant grant request object
  * @returns {Promise} execution promise
  */
-TokenService.getBearerTokenFromCode = function(grant) {
+TokenService.getBearerTokenFromCode = function (grant) {
     let code = null;
     return AuthorizationCode.fromCode(grant)
         .then((authCode) => {
@@ -152,7 +167,7 @@ TokenService.getBearerTokenFromCode = function(grant) {
  * 
  * @returns {string} private key
  */
-TokenService.getPrivateKey = function() {
+TokenService.getPrivateKey = function () {
     const action = () => {
         return getter.get(privateKeyUrl);
     };
@@ -168,7 +183,7 @@ TokenService.getPrivateKey = function() {
  * 
  * @returns {string} public key
  */
-TokenService.getPublicKey = function() {
+TokenService.getPublicKey = function () {
     const action = () => {
         return getter.get(publicKeyUrl);
     };

@@ -55,7 +55,7 @@ class TokenController extends BaseController {
                     return this.sendInternalServerError(req, res, error.message);
                 })
                 .finally(() => {
-                    return this._auditService.saveGrantAuditTrace(grant, authError);
+                    return this._auditService.pushGrantAuditTrace(grant, authError);
                 });
         };
 
@@ -78,7 +78,8 @@ class TokenController extends BaseController {
                 'client_id': params.client_id ? params.client_id.value : null,
                 'redirect_uri': params.redirect_uri.value ? params.redirect_uri.value : null,
                 'authorization': params.Authorization.value ? params.Authorization.value : null,
-                'grant_type': params.grant_type.value ? params.grant_type.value : null
+                'grant_type': params.grant_type.value ? params.grant_type.value : null,
+                'origin_address': req.connection.remoteAddress
             };
         };
     }
