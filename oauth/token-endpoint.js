@@ -15,29 +15,23 @@ class TokenEndpoint {
      * Handle password grant type
      * 
      * @param {any} grant grant definition
-     * @param {any} callback method callback NodeJS format
-     * @returns {undefined}
+     * 
+     * @returns {Promise} execution promise
      */
-    password(grant, callback) {
-        return TokenService.getBearerToken(grant.username, grant.password)
-            .then((token) => {
-                callback(null, token);
-            })
-            .catch((error) => {
-                callback(error, null);
-            });
+    password(grant) {
+        return TokenService.getBearerToken(grant.username, grant.password);
     }
 
     /**
      * Handles client_credentials grant type
      * 
      * @param {any} grant grant definition
-     * @param {any} callback grant callback
-     * @returns {undefined}
+     * 
+     * @returns {Promise} execution promise
      * 
      * @memberOf TokenEndpoint 
      */
-    clientCredentials(grant, callback) {
+    clientCredentials(grant) {
         return TokenService.authenticateClientCredentials(grant)
             .then((account) => {
                 if (!account) {
@@ -46,13 +40,10 @@ class TokenEndpoint {
                 return TokenService.getJwt(account);
             })
             .then((token) => {
-                callback(null, {
+                return {
                     "access_token": token,
                     "token_type": "Bearer"
-                });
-            })
-            .catch((error) => {
-                callback(error, null);
+                };
             });
     }
 
@@ -60,24 +51,18 @@ class TokenEndpoint {
      * Handles authorization code grant type
      * 
      * @param {any} grant grant parameters
-     * @param {any} callback execution callback
-     * @returns {undefined}
+     * 
+     * @returns {Promise} execution promise
      * 
      * @memberOf TokenEndpoint
      */
-    authorizationCode(grant, callback) {
+    authorizationCode(grant) {
         return TokenService.authenticateClientCredentials(grant)
             .then((authorized) => {
                 if (!authorized) {
                     throw new errors.AuthorizationError(messages.INVALID_CREDENTIALS);
                 }
                 return TokenService.getBearerTokenFromCode(grant);
-            })
-            .then((token) => {
-                callback(null, token);
-            })
-            .catch((error) => {
-                callback(error, null);
             });
     }
 }

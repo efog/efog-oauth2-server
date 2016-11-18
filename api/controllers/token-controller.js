@@ -26,7 +26,6 @@ class TokenController extends BaseController {
         this._tokenEndpoint = new TokenEndpoint();
         this._auditService = new AuditService();
 
-
         /**
          * Handles post request on controller
          * 
@@ -41,29 +40,36 @@ class TokenController extends BaseController {
             if (!grantType || !this._tokenEndpoint[grantType]) {
                 return this.sendBadRequest(req, res, messages.INVALID_GRANT_TYPE);
             }
-            const grant = this.makeGrant(req.swagger.params);
-            const endpointCallback = (err, result) => {
-                // this._auditService.auditGrant(grant, err);
-                if (err) {
-                    if (err instanceof errors.ApplicationError) {
-                        return this.sendUnauthorized(req, res, err.message);
+
+            const grant = this.makeGrant(req.swagger.params, req);
+            let authError = null;
+            return this._tokenEndpoint[grantType](grant)
+                .then((result) => {
+                    this.sendOk(req, res, result);
+                })
+                .catch((error) => {
+                    if (error instanceof errors.ApplicationError) {
+                        authError = error;
+                        return this.sendUnauthorized(req, res, error.message);
                     }
-                    return this.sendInternalServerError(req, res, err.message);
-                }
-                return this.sendOk(req, res, result);
-            };
-            return this._tokenEndpoint[grantType](grant, endpointCallback);
+                    return this.sendInternalServerError(req, res, error.message);
+                })
+                .finally(() => {
+                    return this._auditService.saveGrantAuditTrace(grant, authError);
+                });
         };
 
         /**
          * Constructs grant request object
          * 
          * @param {any} params request parameters
+         * @param {any} req http request
+         * 
          * @returns {object} a grant request object
          * 
          * @memberOf TokenController
          */
-        this.makeGrant = (params) => {
+        this.makeGrant = (params, req) => {
             return {
                 'code': params.code ? params.code.value : null,
                 'username': params.username.value ? params.username.value : null,

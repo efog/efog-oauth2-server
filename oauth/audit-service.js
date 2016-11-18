@@ -19,7 +19,7 @@ class AuditService {
     }
 
     /**
-     * Audits grant request
+     * Saves grant audit trace
      * 
      * @param {any} grant request grant definition
      * @param {any} error error generated if any
@@ -28,7 +28,7 @@ class AuditService {
      * 
      * @memberOf AuditService
      */
-    auditGrant(grant, error) {
+    saveGrantAuditTrace(grant, error) {
         const trace = new GrantAuditTrace();
         trace.grantType = grant.grant_type;
         trace.username = grant.username;
@@ -36,10 +36,14 @@ class AuditService {
         trace.clientId = grant.client_id;
         trace.authorization = grant.authorization;
         trace.success = error === null;
-        trace.error = error.message;
-        return trace.save().catch((err) => {
-            this._logger.error(err.message);
-        });
+        trace.error = error ? error.message : null;
+        return trace.save()
+            .then(() => { 
+                return;
+            })
+            .catch((err) => {
+                this._logger.error(err.message);
+            });
     }
 }
 exports.AuditService = AuditService;
