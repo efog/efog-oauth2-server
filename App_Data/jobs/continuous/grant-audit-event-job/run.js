@@ -51,6 +51,9 @@ class GrantAuditTraceJobRunner {
             return this.queueService
                 .then((service) => {
                     queueService = service;
+                    return queueService.createQueueIfNotExistsAsync(this._queueName);
+                })
+                .then(() => {
                     return queueService.getMessagesAsync(this._queueName);
                 })
                 .then((serverMessages) => {
