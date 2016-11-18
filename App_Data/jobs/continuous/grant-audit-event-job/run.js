@@ -60,17 +60,19 @@ class GrantAuditTraceJobRunner {
                     for (let idx = 0; idx < messages.length; idx++) {
                         const message = messages[idx];
                         if (message.dequeuecount >= 5) {
-                            return queueService.deleteMessageAsync(this._queueName, message.messageid, message.popreceipt, null);
+                            processes.push(queueService.deleteMessageAsync(this._queueName, message.messageid, message.popreceipt, null));
                         }
-                        processes.push(
-                            this._auditService.processGrantAuditTrace(message)
-                                .then((processed) => {
-                                    if (processed) {
-                                        return queueService.deleteMessageAsync(this._queueName, processed.messageid, processed.popreceipt, null);
-                                    }
-                                    return message;
-                                })
-                        );
+                        else {
+                            processes.push(
+                                this._auditService.processGrantAuditTrace(message)
+                                    .then((processed) => {
+                                        if (processed) {
+                                            return queueService.deleteMessageAsync(this._queueName, processed.messageid, processed.popreceipt, null);
+                                        }
+                                        return message;
+                                    })
+                            );
+                        }
                     }
                     return Promise.all(processes);
                 })
