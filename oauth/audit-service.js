@@ -31,8 +31,9 @@ class AuditService {
      * @memberOf AuditService
      */
     processGrantAuditTrace(message) {
-        console.log(atob(message.messageText));
-        const messageObject = JSON.parse(atob(message.messageText));
+        const messageObject = JSON.parse(message.messageText);
+        this._logger.debug(`${messageObject.grantType}.`);
+
         let promise = null;
         if (messageObject.grantType === "password") {
             promise = Account.findByName(messageObject.username);
@@ -42,9 +43,7 @@ class AuditService {
             promise = Account.findByApplicationKey(basicAuth.name);
         }
         else {
-            this._logger.debug(`${messageObject.grantType} not handled.`);
             return new Promise((resolve, reject) => {
-                this._logger.debug(`${messageObject.grantType} done.`);
                 return resolve(message);
             });
         }
