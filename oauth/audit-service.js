@@ -31,7 +31,7 @@ class AuditService {
      * @memberOf AuditService
      */
     processGrantAuditTrace(message) {
-        const messageObject = JSON.parse(message.messageText);
+        const messageObject = JSON.parse(atob(message.messageText));
         this._logger.debug(`${messageObject.grantType}.`);
 
         let promise = null;
