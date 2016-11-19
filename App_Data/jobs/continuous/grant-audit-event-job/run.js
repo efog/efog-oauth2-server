@@ -64,14 +64,14 @@ class GrantAuditTraceJobRunner {
                         const message = messages[idx];
                         this._logger.debug(`Message: (${message.messageText})`);
                         if (message.dequeuecount >= 5) {
-                            processes.push(queueService.deleteMessageAsync(this._queueName, message.messageid, message.popreceipt, null));
+                            processes.push(queueService.deleteMessageAsync(this._queueName, message.messageId, message.popReceipt, null));
                         }
                         else {
                             processes.push(
                                 this._auditService.processGrantAuditTrace(message)
                                     .then((processed) => {
                                         if (processed) {
-                                            return queueService.deleteMessageAsync(this._queueName, processed.messageid, processed.popreceipt, null);
+                                            return queueService.deleteMessageAsync(this._queueName, processed.messageId, processed.popReceipt, null);
                                         }
                                         return message;
                                     })

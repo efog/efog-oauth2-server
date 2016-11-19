@@ -31,7 +31,7 @@ class AuditService {
      * @memberOf AuditService
      */
     processGrantAuditTrace(message) {
-        const messageObject = JSON.parse(message.messagetext);
+        const messageObject = JSON.parse(atob(message.messageText));
         let promise = null;
         if (messageObject.grantType === "password") {
             promise = Account.findByName(messageObject.username);
