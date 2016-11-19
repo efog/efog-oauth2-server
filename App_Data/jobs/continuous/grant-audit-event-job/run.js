@@ -62,7 +62,7 @@ class GrantAuditTraceJobRunner {
                     const processes = [];
                     for (let idx = 0; idx < messages.length; idx++) {
                         const message = messages[idx];
-                        this._logger.debug(`Message: (${message})`);
+                        this._logger.debug(`Message: (${message.messagetext})`);
                         if (message.dequeuecount >= 5) {
                             processes.push(queueService.deleteMessageAsync(this._queueName, message.messageid, message.popreceipt, null));
                         }
