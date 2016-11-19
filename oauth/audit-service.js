@@ -37,9 +37,14 @@ class AuditService {
         if (messageObject.grantType === "password") {
             promise = Account.findByName(messageObject.username);
         }
-        else {
+        else if (messageObject.grantType === "client_credentials") {
             const basicAuth = TokenService.getBasicAuthInfo(message.authorization);
             promise = Account.findByApplicationKey(basicAuth.name);
+        }
+        else {
+            return new Promise((resolve, reject) => {
+                return resolve();
+            });
         }
         return promise
             .then((account) => {

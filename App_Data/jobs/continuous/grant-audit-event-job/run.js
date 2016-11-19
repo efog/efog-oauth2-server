@@ -70,6 +70,7 @@ class GrantAuditTraceJobRunner {
                                 this._auditService.processGrantAuditTrace(message)
                                     .then((processed) => {
                                         if (processed) {
+                                            this._logger.debug(`Deleting message: ${processed.messageId},${processed.popReceipt}`);
                                             return queueService.deleteMessageAsync(this._queueName, processed.messageId, processed.popReceipt, null);
                                         }
                                         return message;
@@ -83,6 +84,7 @@ class GrantAuditTraceJobRunner {
                     this._logger.error(error.message);
                 })
                 .finally(() => {
+                    this._logger.debug(`Done processing (${messages.length}) messages.`);
                     if (messages.length) {
                         setImmediate(this.checkQueue);
                     }
