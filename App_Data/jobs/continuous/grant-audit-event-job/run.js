@@ -3,7 +3,7 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const AuditService = require('../../../../oauth/audit-service').AuditService;
 const Logger = require('../../../../tools/logger').Logger;
-const azure = Promise.promisifyAll(require('azure'));
+const azure = Promise.promisifyAll(require('azure-storage'));
 
 /**
  * Grant audit trace webjob runner
