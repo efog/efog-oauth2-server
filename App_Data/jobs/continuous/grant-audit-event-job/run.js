@@ -62,6 +62,7 @@ class GrantAuditTraceJobRunner {
                     const processes = [];
                     for (let idx = 0; idx < messages.length; idx++) {
                         const message = messages[idx];
+                        this._logger.debug(`Message: (${message})`);
                         if (message.dequeuecount >= 5) {
                             processes.push(queueService.deleteMessageAsync(this._queueName, message.messageid, message.popreceipt, null));
                         }
@@ -79,16 +80,16 @@ class GrantAuditTraceJobRunner {
                     }
                     return Promise.all(processes);
                 })
-                .then(() => {
+                .catch((error) => {
+                    this._logger.error(error.message);
+                })
+                .finally(() => {
                     if (messages.length) {
                         setImmediate(this.checkQueue);
                     }
                     else {
                         setTimeout(this.checkQueue, 5000);
                     }
-                })
-                .catch((error) => {
-                    this._logger.error(error.message);
                 });
         };
     }
