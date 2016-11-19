@@ -42,7 +42,9 @@ class AuditService {
             promise = Account.findByApplicationKey(basicAuth.name);
         }
         else {
-            return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                return resolve();
+            });
         }
         return promise
             .then((account) => {
