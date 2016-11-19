@@ -33,6 +33,7 @@ class AuditService {
     processGrantAuditTrace(message) {
         const messageObject = JSON.parse(atob(message.messageText));
         this._logger.debug(`${messageObject.grantType}.`);
+        this._logger.debug(`${messageObject}.`);
 
         let promise = null;
         if (messageObject.grantType === "password") {
