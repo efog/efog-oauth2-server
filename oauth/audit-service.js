@@ -42,8 +42,10 @@ class AuditService {
             promise = Account.findByApplicationKey(basicAuth.name);
         }
         else {
+            this._logger.debug(`${messageObject.grantType} not handled.`);
             return new Promise((resolve, reject) => {
-                return resolve();
+                this._logger.debug(`${messageObject.grantType} done.`);
+                return resolve(message);
             });
         }
         return promise
