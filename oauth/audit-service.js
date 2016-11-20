@@ -36,10 +36,10 @@ class AuditService {
         this._logger.debug(`${atob(message.messageText)}.`);
 
         let promise = null;
-        if (messageObject.grantType === "password") {
+        if (messageObject.username && (messageObject.grantType === "password" || messageObject.grantType === "code")) {
             promise = Account.findByName(messageObject.username);
         }
-        else if (messageObject.grantType === "client_credentials") {
+        else if (message.authorization && messageObject.grantType === "client_credentials") {
             const basicAuth = TokenService.getBasicAuthInfo(message.authorization);
             promise = Account.findByApplicationKey(basicAuth.name);
         }
