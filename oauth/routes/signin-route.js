@@ -110,14 +110,13 @@ class SigninRoute extends BaseRoute {
                 .finally(() => {
                     const grant = {
                         'code': null,
-                        'username': request.payload.username.value ? request.payload.username.value : null,
-                        'password': request.payload.value ? request.payload.value : null,
-                        'scope': request.payload.scope.value ? request.payload.scope.value : null,
-                        'client_id': request.payload.client_id ? request.payload.client_id.value : null,
-                        'redirect_uri': request.payload.redirect_uri.value ? request.payload.redirect_uri.value : null,
+                        'username': request.payload.username ? request.payload.username : null,
+                        'scope': request.payload.scope ? request.payload.scope : null,
+                        'client_id': request.payload.client_id ? request.payload.client_id : null,
+                        'redirect_uri': request.payload.redirect_uri ? request.payload.redirect_uri : null,
                         'authorization': null,
                         'grant_type': "password",
-                        'origin_address': request.connection.remoteAddress
+                        'origin_address': request.connection.info.remoteAddress
                     };
                     return this._auditService.pushGrantAuditTrace(grant, authError);
                 });
