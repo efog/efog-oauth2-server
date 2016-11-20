@@ -58,8 +58,8 @@ class AuditService {
                             "events": []
                         };
                     }
-                    account.activity.lastSuccessfulAuthentication = messageObject.success ? moment() : account.activity.lastSuccessfulAuthentication;
-                    account.activity.lastFailedAuthentication = messageObject.success ? account.activity.lastFailedAuthentication : moment();
+                    account.activity.lastSuccessfulAuthentication = messageObject.success ? moment(messageObject.timestamp) : account.activity.lastSuccessfulAuthentication;
+                    account.activity.lastFailedAuthentication = messageObject.success ? account.activity.lastFailedAuthentication : moment(messageObject.timestamp);
                     account.activity.events.push({
                         "origin": messageObject.originAddress,
                         "clientId": messageObject.clientId,
