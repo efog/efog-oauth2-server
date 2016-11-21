@@ -101,7 +101,7 @@ class SigninRoute extends BaseRoute {
                     }
                     // check if user has allowed client_id
                     // offer to add if not
-                    return reply.view('signin', viewData);
+                    return reply.redirect('/');
                 })
                 .catch((error) => {
                     authError = error;

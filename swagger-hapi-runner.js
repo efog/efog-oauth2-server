@@ -37,70 +37,71 @@ class HapiRunner {
      * 
      * @memberOf HapiRunner
      */
-    static configureWebRoutes(app) {
+    static configurePortalRoutes(app) {
+
+        const portalRoutes = app.select('portal');
 
         const signinRoute = new SigninRoute();
+        const registerRoute = new RegisterRoute();
+        const registerClientRoute = new RegisterClientRoute();
         const homeRoute = new HomeRoute();
-        app.route({
+
+        portalRoutes.route({
             "method": 'GET',
             "path": '/',
             "config": {
                 "handler": homeRoute.get
             }
         });
-        app.route({
+        portalRoutes.route({
             "method": 'GET',
             "path": '/signin',
             "config": {
                 "handler": signinRoute.get
             }
         });
-        app.route({
-            "method": 'GET',
-            "path": '/signout',
-            "config": {
-                "handler": signinRoute.out
-            }
-        });
-        app.route({
+        portalRoutes.route({
             "method": 'POST',
             "path": '/signin',
             "config": {
                 "handler": signinRoute.post
             }
         });
-
-        const registerRoute = new RegisterRoute();
-        app.route({
+        portalRoutes.route({
             "method": 'GET',
-            "path": '/register',
+            "path": '/signout',
             "config": {
-                "handler": registerRoute.get
+                "handler": signinRoute.out
             }
         });
-        app.route({
-            "method": 'POST',
-            "path": '/register',
-            "config": {
-                "handler": registerRoute.post
-            }
-        });
-
-        const registerClientRoute = new RegisterClientRoute();
-        app.route({
-            "method": 'GET',
-            "path": '/register-client',
-            "config": {
-                "handler": registerClientRoute.get
-            }
-        });
-        app.route({
-            "method": 'POST',
-            "path": '/register-client',
-            "config": {
-                "handler": registerClientRoute.post
-            }
-        });
+        // portalRoutes.route({
+        //     "method": 'GET',
+        //     "path": '/register',
+        //     "config": {
+        //         "handler": registerRoute.get
+        //     }
+        // });
+        // portalRoutes.route({
+        //     "method": 'POST',
+        //     "path": '/register',
+        //     "config": {
+        //         "handler": registerRoute.post
+        //     }
+        // });
+        // portalRoutes.route({
+        //     "method": 'GET',
+        //     "path": '/register-client',
+        //     "config": {
+        //         "handler": registerClientRoute.get
+        //     }
+        // });
+        // portalRoutes.route({
+        //     "method": 'POST',
+        //     "path": '/register-client',
+        //     "config": {
+        //         "handler": registerClientRoute.post
+        //     }
+        // });
     }
 
     /**
@@ -112,10 +113,11 @@ class HapiRunner {
      * 
      * @memberOf HapiRunner
      */
-    static configureBotRoutes(app) {        
-        app.route({
+    static configureBotRoutes(app) {
+        const botRoutes = app.select('bot');
+        botRoutes.route({
             "method": 'POST',
-            "path": '/fogg',
+            "path": '/oauth/bot',
             "config": {
                 "handler": Bot.connector.listen()
             }
@@ -131,105 +133,123 @@ class HapiRunner {
     static set server(value) {
         HapiRunner._server = value;
     }
+
+    /**
+     * Start server
+     * 
+     * @static
+     * @returns {undefined}
+     * 
+     * @memberOf HapiRunner
+     */
     static start() {
         const logger = new Logger().logger;
-        if (!HapiRunner.server) {
+        const app = new Hapi.Server({});
+        const config = {
+            "appRoot": __dirname,
+            "routes": {
+                "cors": true
+            }
+        };
+        const port = process.env.PORT || 2406;
 
-            const app = new Hapi.Server({
-
-            });
-
-            const config = {
-                "appRoot": __dirname,
-                "routes": {
-                    "cors": true
-                }
+        app.connection({
+            "port": port,
+            "labels": ['portal', 'bot']
+        });
+        app.address = function () {
+            return {
+                "port": port
             };
+        };
 
-            SwaggerHapi.create(config, function (err, swaggerHapi) {
-                if (err) {
-                    throw new Error(err.message);
+        const jwtAuthConfig = {
+            "register": jwtAuth,
+            "options": {
+                "logger": logger
+            }
+        };
+        const crumbConfig = {
+            "register": Crumb,
+            "options": {
+                "cookieOptions": {
+                    "path": "/",
+                    "isSecure": false,
+                    "isHttpOnly": true,
+                    "encoding": "none",
+                    "domain": process.env.APPSETTING_APP_NET_DOMAIN
                 }
-                console.log(`¯\_(ツ)_/¯`);
-                // ¯\_(ツ)_/¯
-                HapiRunner.server = swaggerHapi;
-                const port = process.env.PORT || 2406;
-                app.connection({
-                    "port": port
-                });
-                app.address = function () {
-                    return {
-                        "port": port
-                    };
-                };
+            }
+        };
+        const bunyanConfig = {
+            "register": hapiBunyan,
+            "options": {
+                "logger": logger
+            }
+        };
+        app.register([jwtAuthConfig, crumbConfig, bunyanConfig],
+            {
+                "select": ['portal']
+            },
+            (error) => {
+                if (error) {
+                    logger.error(error);
+                }
+            }
+        );
 
-                const jwtAuthConfig = {
-                    "register": jwtAuth,
-                    "options": {
-                        "logger": logger
+        // Vision
+        app.register(require('vision'), (visionError) => {
+            Hoek.assert(!visionError, visionError);
+            app.views({
+                "engines": {
+                    "html": require('handlebars')
+                },
+                "relativeTo": __dirname,
+                "layout": true,
+                "path": Path.join(__dirname, 'oauth', 'pages', 'views'),
+                "layoutPath": Path.join(__dirname, 'oauth', 'pages', 'layout'),
+                "partialsPath": Path.join(__dirname, 'oauth', 'pages', 'partials')
+            });
+        });
+
+        // Inert
+        app.register(require('inert'), (inertError) => {
+            if (inertError) {
+                throw new Error(inertError.message);
+            }
+            app.route({
+                "method": 'GET',
+                "path": '/{param*}',
+                "handler": {
+                    "directory": {
+                        "path": Path.join(__dirname, 'oauth', 'pages')
                     }
-                };
-                const crumbConfig = {
-                    "register": Crumb,
-                    "options": {
-                        "cookieOptions": {
-                            "path": "/",
-                            "isSecure": false,
-                            "isHttpOnly": true,
-                            "encoding": "none",
-                            "domain": process.env.APPSETTING_APP_NET_DOMAIN
-                        }
-                    }
-                };
-                const bunyanConfig = {
-                    "register": hapiBunyan,
-                    "options": {
-                        "logger": logger
-                    }
-                };
-                app.register([jwtAuthConfig, crumbConfig, bunyanConfig, swaggerHapi.plugin], (error) => {
+                }
+            });
+        });
+
+        SwaggerHapi.create(config, function (err, swaggerHapi) {
+            if (err) {
+                throw new Error(err.message);
+            }
+            console.log(`¯\_(ツ)_/¯`);
+            app.register([swaggerHapi.plugin],
+                (error) => {
                     if (error) {
                         logger.error(error);
                     }
-                });
-
-                app.register(require('vision'), (visionError) => {
-                    Hoek.assert(!visionError, visionError);
-                    app.views({
-                        "engines": {
-                            "html": require('handlebars')
-                        },
-                        "relativeTo": __dirname,
-                        "layout": true,
-                        "path": Path.join(__dirname, 'oauth', 'pages', 'views'),
-                        "layoutPath": Path.join(__dirname, 'oauth', 'pages', 'layout'),
-                        "partialsPath": Path.join(__dirname, 'oauth', 'pages', 'partials')
-                    });
-
-                    HapiRunner.configureWebRoutes(app);
-                    HapiRunner.configureBotRoutes(app);
-                });
-                // Inert
-                app.register(require('inert'), (inertError) => {
-                    if (inertError) {
-                        throw new Error(inertError.message);
-                    }
-                    app.route({
-                        "method": 'GET',
-                        "path": '/{param*}',
-                        "handler": {
-                            "directory": {
-                                "path": Path.join(__dirname, 'oauth', 'pages')
-                            }
-                        }
-                    });
-                    return app.start(function () {
-                        console.log(`Server running at port: ${port}`);
-                    });
-                });
+                }
+            );            
+            return app.start(function () {
+                console.log(`Server running at port: ${port}`);
             });
 
-        }
+        });
+
+        HapiRunner.configureBotRoutes(app);
+        HapiRunner.configurePortalRoutes(app);
+
     }
 }
 module.exports = HapiRunner;
