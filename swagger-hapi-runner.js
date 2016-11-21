@@ -8,6 +8,7 @@ const RegisterRoute = require('./oauth/routes/register-route').RegisterRoute;
 const RegisterClientRoute = require('./oauth/routes/register-client-route').RegisterClientRoute;
 const HomeRoute = require('./oauth/routes/home-route').HomeRoute;
 const SigninRoute = require('./oauth/routes/signin-route').SigninRoute;
+const Bot = require('./bot/bot').Bot;
 const hapiBunyan = require("hapi-bunyan");
 const jwtAuth = require('./oauth/plugins/jwt-auth').jwtAuth;
 
@@ -25,6 +26,100 @@ class HapiRunner {
      */
     static get server() {
         return HapiRunner._server;
+    }
+
+    /**
+     * Configures web routes
+     * 
+     * @static
+     * @param {any} app HAPIJS app object
+     * @returns {undefined}
+     * 
+     * @memberOf HapiRunner
+     */
+    static configureWebRoutes(app) {
+
+        const signinRoute = new SigninRoute();
+        const homeRoute = new HomeRoute();
+        app.route({
+            "method": 'GET',
+            "path": '/',
+            "config": {
+                "handler": homeRoute.get
+            }
+        });
+        app.route({
+            "method": 'GET',
+            "path": '/signin',
+            "config": {
+                "handler": signinRoute.get
+            }
+        });
+        app.route({
+            "method": 'GET',
+            "path": '/signout',
+            "config": {
+                "handler": signinRoute.out
+            }
+        });
+        app.route({
+            "method": 'POST',
+            "path": '/signin',
+            "config": {
+                "handler": signinRoute.post
+            }
+        });
+
+        const registerRoute = new RegisterRoute();
+        app.route({
+            "method": 'GET',
+            "path": '/register',
+            "config": {
+                "handler": registerRoute.get
+            }
+        });
+        app.route({
+            "method": 'POST',
+            "path": '/register',
+            "config": {
+                "handler": registerRoute.post
+            }
+        });
+
+        const registerClientRoute = new RegisterClientRoute();
+        app.route({
+            "method": 'GET',
+            "path": '/register-client',
+            "config": {
+                "handler": registerClientRoute.get
+            }
+        });
+        app.route({
+            "method": 'POST',
+            "path": '/register-client',
+            "config": {
+                "handler": registerClientRoute.post
+            }
+        });
+    }
+
+    /**
+     * Configures bot routes
+     * 
+     * @static
+     * @param {any} app HAPIJS app object
+     * @returns {undefined}
+     * 
+     * @memberOf HapiRunner
+     */
+    static configureBotRoutes(app) {        
+        app.route({
+            "method": 'POST',
+            "path": '/fogg',
+            "config": {
+                "handler": Bot.connector.listen()
+            }
+        });
     }
 
     /**
@@ -111,68 +206,8 @@ class HapiRunner {
                         "partialsPath": Path.join(__dirname, 'oauth', 'pages', 'partials')
                     });
 
-                    const signinRoute = new SigninRoute();
-                    const homeRoute = new HomeRoute();
-                    app.route({
-                        "method": 'GET',
-                        "path": '/',
-                        "config": {
-                            "handler": homeRoute.get
-                        }
-                    });
-                    app.route({
-                        "method": 'GET',
-                        "path": '/signin',
-                        "config": {
-                            "handler": signinRoute.get
-                        }
-                    });
-                    app.route({
-                        "method": 'GET',
-                        "path": '/signout',
-                        "config": {
-                            "handler": signinRoute.out
-                        }
-                    });
-                    app.route({
-                        "method": 'POST',
-                        "path": '/signin',
-                        "config": {
-                            "handler": signinRoute.post
-                        }
-                    });
-
-                    const registerRoute = new RegisterRoute();
-                    app.route({
-                        "method": 'GET',
-                        "path": '/register',
-                        "config": {
-                            "handler": registerRoute.get
-                        }
-                    });
-                    app.route({
-                        "method": 'POST',
-                        "path": '/register',
-                        "config": {
-                            "handler": registerRoute.post
-                        }
-                    });
-
-                    const registerClientRoute = new RegisterClientRoute();
-                    app.route({
-                        "method": 'GET',
-                        "path": '/register-client',
-                        "config": {
-                            "handler": registerClientRoute.get
-                        }
-                    });
-                    app.route({
-                        "method": 'POST',
-                        "path": '/register-client',
-                        "config": {
-                            "handler": registerClientRoute.post
-                        }
-                    });
+                    HapiRunner.configureWebRoutes(app);
+                    HapiRunner.configureBotRoutes(app);
                 });
                 // Inert
                 app.register(require('inert'), (inertError) => {
